@@ -2,7 +2,6 @@
 
 
 ## Ejercicios básicos de hilos
----
 
 ### **Ejercicio 1: Cajero Automático**  
 Un banco tiene un cajero automático que funciona como un sistema productor-consumidor. El sistema central del banco (productor) repone efectivo en el cajero, mientras que los clientes (consumidores) retiran dinero. Implementa un programa que simule este flujo, con un buffer que represente el efectivo disponible y una capacidad máxima que limite la cantidad de dinero en el cajero. Asegúrate de que los clientes esperen si el cajero está vacío y el sistema central espere si está lleno.
@@ -31,7 +30,6 @@ En un restaurante, los chefs (productores) preparan platos que se colocan en una
 
 ## SINCRONIZAR HILOS
 
----
 
 ### **Ejercicio 1: Cajero Automático**  
 Un banco tiene un cajero automático que funciona como un sistema productor-consumidor. El sistema central del banco (productor) repone efectivo en el cajero, mientras que los clientes (consumidores) retiran dinero. Implementa un programa que simule este flujo, con un buffer que represente el efectivo disponible y una capacidad máxima que limite la cantidad de dinero en el cajero. Asegúrate de que los clientes esperen si el cajero está vacío y el sistema central espere si está lleno.
@@ -59,8 +57,6 @@ En un restaurante, los chefs (productores) preparan platos que se colocan en una
 ---
 
 ## PRODUCTOR-CONSUMIDOR
-
----
 
 ### **Ejercicio 1: Cajero Automático**  
 Un banco tiene un cajero automático que funciona como un sistema productor-consumidor. El sistema central del banco (productor) repone efectivo en el cajero, mientras que los clientes (consumidores) retiran dinero. Implementa un programa que simule este flujo, con un buffer que represente el efectivo disponible y una capacidad máxima que limite la cantidad de dinero en el cajero. Asegúrate de que los clientes esperen si el cajero está vacío y el sistema central espere si está lleno.
