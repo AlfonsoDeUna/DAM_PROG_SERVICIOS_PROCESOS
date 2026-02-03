@@ -1,7 +1,6 @@
-#cliente para serverBC.py
-
+import socket
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as cliente:
-   cliente.connect(("0.0.0.0", 64532))
+   cliente.connect(("127.0.0.1", 65432))
    mensaje = input("escribe tu mensaje:")
    cliente.sendall(mensaje.encode("utf-8"))
    data = cliente.recv(1024)
