@@ -16,8 +16,6 @@ Los ejemplos están pensados para **Windows, Python 3 y una terminal de Visual S
 - [5. Ejecución de un script desde otro script](#5-ejecución-de-un-script-desde-otro-script)
 - [6. Ejecución con espera y sin espera](#6-ejecución-con-espera-y-sin-espera)
 - [Errores frecuentes](#errores-frecuentes)
-- [Comprueba lo que has entendido](#comprueba-lo-que-has-entendido)
-- [Documentación de consulta](#documentación-de-consulta)
 
 ## Antes de empezar
 
