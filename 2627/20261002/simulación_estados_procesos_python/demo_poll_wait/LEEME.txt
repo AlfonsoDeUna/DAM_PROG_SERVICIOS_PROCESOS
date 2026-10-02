@@ -1,0 +1,97 @@
+EN PANTALLA: SIGNIFICADO Y EJEMPLO
+poll(): consulta si el hijo terminó, sin bloquear al padre.
+Ejemplo: comprobar una descarga mientras la ventana responde.
+
+wait(): bloquea al que llama hasta que el hijo termina.
+Ejemplo: esperar a que se genere un archivo antes de leerlo.
+
+VERSIÓN SIMPLIFICADA CON BOTONES
+Cada botón crea un hijo nuevo y aplica el método indicado.
+Los botones se desactivan hasta que termina el hijo.
+También se conservan los atajos P y W en la ventana del padre.
+
+DEMO: poll() y wait() con procesos reales y Pygame
+================================================
+
+INSTALACIÓN Y ARRANQUE
+Python 3.10 o posterior. Abre una terminal en esta carpeta:
+
+    python -m pip install -r requirements.txt
+    python demo.py
+
+En Windows también puedes utilizar py en lugar de python.
+Mantén demo.py e hijo.py en la misma carpeta. No hacen falta imágenes.
+Si las ventanas se superponen o quedan fuera del escritorio, muévelas
+antes de probar wait(). Tamaños: padre 690 x 535, hijo 510 x 345.
+
+EXPERIMENTO PARA CLASE (3 MINUTOS)
+1. Observa el cuadrado naranja del PADRE: se mueve continuamente.
+2. Haz clic en Probar poll() en el PADRE. Se crea otro proceso, el HIJO.
+   El hijo pinta cuadrados verdes durante unos seis segundos y termina.
+   El padre consulta poll() en cada fotograma y sigue moviendo su cuadrado.
+3. Cuando termine, haz clic en Probar wait() en el PADRE para crear un hijo nuevo idéntico.
+   El padre muestra un aviso y llama a wait(). Su cuadrado se congela; el hijo sigue pintando en su propia ventana.
+   Al terminar el hijo, wait() devuelve su código y el padre continúa.
+4. Repite con cualquiera de los dos botones. Cada prueba crea un proceso nuevo con su propio PID.
+
+Durante wait(), el padre deja de atender su ventana deliberadamente.
+El sistema puede mostrar "No responde". Recupera la respuesta al terminar
+el hijo (aproximadamente 6,5 s más el arranque). Los clics durante wait() se descartan al regresar para evitar
+que inicien otra prueba accidentalmente. Esc y cerrar el padre también se atienden
+después de wait(). Para adelantar el final, cierra la ventana del HIJO.
+
+QUÉ CÓDIGO LEER
+hijo.py: bucle independiente que dibuja 60 cuadrados, limita los FPS y sale.
+demo.py: busca los comentarios CLAVE 1 y CLAVE 2.
+
+    codigo = hijo.wait()
+    # Esta línea solo continúa cuando termina el hijo.
+
+    codigo = hijo.poll()
+    if codigo is not None:
+        # El hijo ya ha terminado.
+        ...
+    # Podemos seguir atendiendo eventos y dibujando.
+
+No son pygame.event.poll(), pygame.event.wait() ni pygame.time.wait().
+Son métodos del objeto subprocess.Popen, como en tus programas de clase.
+
+IDEAS QUE DEBEN QUEDAR CLARAS
+- Popen crea el proceso; poll y wait consultan o esperan su finalización.
+- poll() devuelve None mientras el hijo no haya terminado. Cuando termina,
+  devuelve un entero. No informa del progreso, del uso de CPU ni de si
+  el hijo está ejecutando instrucciones en ese instante.
+- wait() sin timeout espera la finalización y devuelve el código de salida.
+  Bloquea el hilo que lo llama. Aquí es el hilo de la ventana del padre.
+  El hijo y los demás procesos siguen funcionando.
+- 0 suele significar éxito. También es un valor falso en Python:
+  por eso usamos 'is not None' para detectar que el proceso terminó.
+- poll() no vuelve concurrente el programa por sí mismo. El padre debe
+  continuar con otras tareas entre consultas. reloj.tick(60) limita los FPS.
+- Cada ventana la pinta su propio proceso; el hijo no modifica la ventana
+  ni las variables del padre. No usamos hilos ni comunicación entre procesos.
+- Esperar al terminar la aplicación es útil para recoger al hijo. wait()
+  no es un método malo: aquí lo situamos en el bucle gráfico para mostrar
+  su efecto. En una interfaz real se puede consultar poll() en cada ciclo.
+
+PREGUNTAS PARA EL ALUMNADO
+¿Qué cuadrado se detiene? ¿Qué proceso llama a wait()?
+¿Por qué None y 0 no se pueden comprobar con 'if codigo'?
+¿Qué devuelve poll() si cierras el HIJO antes de que termine? En esta demo,
+cerrarlo o pulsar Esc en él devuelve 2: terminado, pero de forma anticipada.
+
+RELACIÓN CON TU REPOSITORIO
+padre.py -> tecla P; padre2.py -> tecla W.
+Como en clase, usamos sys.executable, pathlib y subprocess.Popen.
+El hijo de esta demo dibuja en lugar de alternar cálculo y pausas.
+padre3.py muestra wait(timeout=3): al agotarse el plazo se lanza
+TimeoutExpired, pero eso no termina al hijo. Queda como ampliación.
+
+Fuentes:
+https://github.com/AlfonsoDeUna/DAM_PROG_SERVICIOS_PROCESOS/tree/main/2627/20261001
+https://docs.python.org/3/library/subprocess.html#subprocess.Popen.poll
+https://docs.python.org/3/library/subprocess.html#subprocess.Popen.wait
+
+OPCIONES PARA REPETIR PRUEBAS
+    python demo.py --modo poll --auto-salir
+    python demo.py --modo wait --auto-salir

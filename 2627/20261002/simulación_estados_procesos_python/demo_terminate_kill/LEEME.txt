@@ -1,0 +1,74 @@
+EN PANTALLA: SIGNIFICADO Y EJEMPLO
+terminate(): termina en Windows; envía SIGTERM en POSIX.
+Ejemplo: cancelar un proceso que ya no necesitamos.
+
+kill(): fuerza la terminación del proceso.
+Ejemplo: cerrar un proceso que no responde a terminate().
+
+VERSIÓN CON BOTONES
+El hijo se crea automáticamente al abrir la demo.
+Haz clic en los botones de la ventana PADRE. Los botones grises están
+desactivados. Nuevo hijo se activa cuando el anterior ha terminado.
+terminate/kill cierran la ventana HIJO: el PADRE permanece abierto.
+Los atajos de teclado solo funcionan con el foco en el PADRE.
+
+TERMINATE Y KILL: LA DIFERENCIA DEPENDE DEL SISTEMA
+================================================
+1. Ejecuta demo.py, haz clic en Nuevo hijo y espera a ver el hijo dibujando.
+2. Haz clic en terminate() en el PADRE: p.terminate(). Observa el cierre y la limpieza.
+3. Haz clic en Nuevo hijo para crear otro hijo y haz clic en kill(): p.kill(). Compara los resultados.
+4. Haz clic en Nuevo hijo de nuevo y Esc en el HIJO: salida voluntaria con limpieza.
+
+WINDOWS
+terminate() y kill() usan TerminateProcess. Ambos terminan forzosamente
+el proceso; no se ejecuta su finally. Es correcto que ambas pruebas se
+vean iguales. terminate() NO equivale a pulsar la X de la ventana.
+La salida voluntaria sirve de contraste: aparece el aviso de cierre y
+el padre confirma la limpieza, con código de salida 0.
+
+LINUX Y macOS (POSIX)
+terminate() envía SIGTERM. Nuestro hijo instala explícitamente un
+manejador: marca una bandera, muestra el aviso durante 1,5 segundos,
+sale del bucle y ejecuta finally. Por eso termina con código 0.
+Sin ese manejador, SIGTERM normalmente terminaría el proceso sin ejecutar
+ese finally. terminate() por sí solo NO garantiza una limpieza ordenada.
+Un programa puede manejar o ignorar SIGTERM y tardar o no terminar.
+kill() envía SIGKILL: no puede capturarse ni ignorarse. El hijo no puede
+ejecutar limpieza. Con Popen.poll() su código suele ser -9 en POSIX.
+
+Ninguna de estas llamadas es wait(): el padre consulta poll() para
+confirmar la terminación. Un proceso terminado no se puede reanudar.
+Los códigos dependen del sistema y del modo de salida: observa el real
+mostrado por la demo, sin asumir que todos los cierres devuelven 0.
+
+INSTALACIÓN
+Python 3.10 o posterior. Abre una terminal en esta carpeta:
+    python -m pip install -r requirements.txt
+    python demo.py
+En Windows también puedes usar py en lugar de python.
+
+ARCHIVOS Y OBJETOS
+demo.py es el padre. hijo.py dibuja en una ventana independiente.
+hijo = subprocess.Popen(...) crea al hijo y permite poll() y wait().
+p = psutil.Process(hijo.pid) permite controlar ese mismo proceso.
+Las operaciones que estudiamos son de psutil.Process (variable p).
+El padre usa poll() en su bucle para seguir atendiendo la interfaz.
+Una vez terminado, N crea otro hijo con otro PID: no resucita al anterior.
+
+El hijo dibuja indefinidamente hasta que lo cierras o terminas su proceso.
+El indicador de limpieza se basa en un archivo escrito realmente por el
+finally del hijo en una carpeta temporal. NO significa que el sistema
+no libere recursos al matar un proceso: indica si se ejecutó el código
+de limpieza de nuestra aplicación. No se conservan archivos al salir.
+
+Las ventanas pueden moverse. Si se superponen, colócalas una junto a otra.
+Al cerrar el PADRE, se mata y recoge su hijo, incluso si está suspendido.
+Esta limpieza de la demo es forzosa; no es una prueba de salida voluntaria.
+Esc en el HIJO solicita una salida voluntaria con 1,5 segundos de aviso,
+ejecución del finally y código 0. Durante ese aviso puedes probar kill().
+
+FUENTES
+https://psutil.readthedocs.io/
+https://docs.python.org/3/library/subprocess.html
+Patrón basado en los ejemplos de clase:
+https://github.com/AlfonsoDeUna/DAM_PROG_SERVICIOS_PROCESOS/tree/main/2627/20261001

@@ -1,0 +1,64 @@
+EN PANTALLA: SIGNIFICADO Y EJEMPLO
+suspend(): pausa al hijo sin cerrarlo ni perder sus datos.
+Ejemplo: pausar un cálculo para liberar tiempo de CPU.
+
+resume(): permite que el hijo suspendido continúe.
+Ejemplo: continuar ese cálculo desde donde se quedó.
+
+VERSIÓN CON BOTONES
+El hijo se crea automáticamente al abrir la demo.
+Haz clic en los botones de la ventana PADRE. Los botones grises están
+desactivados. Nuevo hijo se activa cuando el anterior ha terminado.
+terminate/kill cierran la ventana HIJO: el PADRE permanece abierto.
+Los atajos de teclado solo funcionan con el foco en el PADRE.
+
+SUSPEND Y RESUME: PAUSAR NO ES TERMINAR
+====================================
+1. Ejecuta demo.py y haz clic en Nuevo hijo en el PADRE. Observa ambas animaciones.
+2. Haz clic en suspend() en el PADRE: p.suspend() suspende al hijo real. Sus cuadrados
+   y su contador de fotogramas se congelan. El padre continúa animando.
+3. Observa que el PID permanece y poll() devuelve None: no ha terminado.
+4. Haz clic en resume() en el PADRE: p.resume() permite continuar al mismo proceso.
+   Su contador y sus cuadrados siguen donde estaban. Repite S y R.
+
+El hijo no recibe eventos mientras está suspendido: su ventana puede
+mostrar "No responde" y acumular clics o una petición de cierre. R lo
+reanuda y permite atenderlos. Usa las teclas S/R en la ventana del PADRE.
+La interfaz evita suspensiones repetidas y reanudaciones sin pausa.
+
+En POSIX, suspend/resume usan SIGSTOP/SIGCONT. En Windows psutil suspende
+y reanuda los hilos del proceso. No se recrea el hijo ni se reinician datos.
+Suspender tampoco equivale a sleep(): aquí la pausa la ordena el padre.
+poll() == None solo dice que no ha terminado, no que esté avanzando.
+
+INSTALACIÓN
+Python 3.10 o posterior. Abre una terminal en esta carpeta:
+    python -m pip install -r requirements.txt
+    python demo.py
+En Windows también puedes usar py en lugar de python.
+
+ARCHIVOS Y OBJETOS
+demo.py es el padre. hijo.py dibuja en una ventana independiente.
+hijo = subprocess.Popen(...) crea al hijo y permite poll() y wait().
+p = psutil.Process(hijo.pid) permite controlar ese mismo proceso.
+Las operaciones que estudiamos son de psutil.Process (variable p).
+El padre usa poll() en su bucle para seguir atendiendo la interfaz.
+Una vez terminado, N crea otro hijo con otro PID: no resucita al anterior.
+
+El hijo dibuja indefinidamente hasta que lo cierras o terminas su proceso.
+El indicador de limpieza se basa en un archivo escrito realmente por el
+finally del hijo en una carpeta temporal. NO significa que el sistema
+no libere recursos al matar un proceso: indica si se ejecutó el código
+de limpieza de nuestra aplicación. No se conservan archivos al salir.
+
+Las ventanas pueden moverse. Si se superponen, colócalas una junto a otra.
+Al cerrar el PADRE, se mata y recoge su hijo, incluso si está suspendido.
+Esta limpieza de la demo es forzosa; no es una prueba de salida voluntaria.
+Esc en el HIJO solicita una salida voluntaria con 1,5 segundos de aviso,
+ejecución del finally y código 0. Durante ese aviso puedes probar kill().
+
+FUENTES
+https://psutil.readthedocs.io/
+https://docs.python.org/3/library/subprocess.html
+Patrón basado en los ejemplos de clase:
+https://github.com/AlfonsoDeUna/DAM_PROG_SERVICIOS_PROCESOS/tree/main/2627/20261001
