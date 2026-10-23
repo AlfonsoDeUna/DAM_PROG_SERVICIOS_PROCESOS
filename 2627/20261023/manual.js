@@ -1,5 +1,5 @@
-import { missions } from './missions.js';
-import { manualLessons } from './manual-lessons.js?v=20261023-simple1';
+import { missions } from './missions.js?v=20261023-simple2';
+import { manualLessons } from './manual-lessons.js?v=20261023-simple2';
 import { checkOutput } from './checks.js';
 import { freshState, normaliseState, recordOutput } from './state.js';
 import { buildManualNotebookHtml, buildManualNotebookPdf, manualNotebookFilename } from './manual-notebook.js?v=20261023-simple1';
@@ -70,7 +70,7 @@ function manualMessage(value) {
     .replaceAll('estas misiones', 'estos ejemplos').replaceAll('esta misión', 'este apartado');
 }
 function renderNav() {
-  $('lesson-nav').innerHTML = missions.map((m, i) => `${i === 6 ? '<p class="nav-label">Para ampliar · opcional</p>' : ''}<button class="lesson-link${i === state.current ? ' active' : ''}${state.sessions[m.id].verdicts.base?.ok ? ' checked' : ''}" data-lesson="${i}"${i === state.current ? ' aria-current="page"' : ''}><span class="number">${String(i + 1).padStart(2, '0')}</span><strong>${esc(m.shortTitle)}</strong>${state.sessions[m.id].verdicts.base?.ok ? '<span aria-label="Prueba comprobada">✓</span>' : ''}</button>`).join('');
+  $('lesson-nav').innerHTML = missions.map((m, i) => `${i === 7 ? '<p class="nav-label">Para ampliar · opcional</p>' : ''}<button class="lesson-link${i === state.current ? ' active' : ''}${state.sessions[m.id].verdicts.base?.ok ? ' checked' : ''}" data-lesson="${i}"${i === state.current ? ' aria-current="page"' : ''}><span class="number">${String(i + 1).padStart(2, '0')}</span><strong>${esc(m.shortTitle)}</strong>${state.sessions[m.id].verdicts.base?.ok ? '<span aria-label="Prueba comprobada">✓</span>' : ''}</button>`).join('');
 }
 function renderFeedback() {
   const verdict = currentSession().verdicts.base;

@@ -49,7 +49,7 @@ export const manualLessons = {
       'os.getpid() devuelve el PID: un número que identifica un proceso durante esa ejecución. El proceso principal también tiene su propio PID.',
       'Los mensajes INICIO y FIN indican el dato, el proceso y el resultado. Un mismo trabajador puede aparecer en varias tareas.',
       'sleep(1) introduce una pausa de un segundo para hacer visible el solapamiento. Esta pausa es una ayuda para observar, no trabajo de cálculo.',
-      'chunksize=1 entrega los datos en lotes de una tarea. La línea «Después de map» se alcanza cuando están disponibles todos los resultados.'
+      'map reparte las llamadas entre los trabajadores. La línea «Después de map» se alcanza cuando están disponibles todos los resultados.'
     ],
     instruction: 'Ejecuta 05_observar.py con procesos = 2 y datos = [1, 2, 3, 4, 5, 6]. Pega toda la salida, desde «PID del proceso principal» hasta «Tiempo total», incluidos INICIO y FIN.',
     observe: 'Busca qué PID se repite en distintas tareas. Los números de PID y el orden de algunos mensajes pueden variar entre ejecuciones.'
@@ -73,8 +73,7 @@ export const manualLessons = {
       'starmap separa cada pareja en argumentos y devuelve los productos en el orden de entrada. map pasaría la pareja como un único argumento.'
     ],
     instruction: 'Guarda y ejecuta 07_starmap.py con las tres parejas del ejemplo. Pega la lista completa que imprime.',
-    observe: 'Hay un producto por pareja. Los trabajadores ejecutan la misma función con dos argumentos en cada llamada.',
-    optional: 'Ampliación opcional'
+    observe: 'Hay un producto por pareja. Los trabajadores ejecutan la misma función con dos argumentos en cada llamada.'
   },
   final: {
     intro: 'Adapta la función para sumar cubos. Un cubo es el producto de tres factores iguales; con el límite 3 queremos sumar 1³ + 2³ + 3³.',

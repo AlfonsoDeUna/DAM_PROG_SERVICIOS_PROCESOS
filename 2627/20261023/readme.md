@@ -31,6 +31,8 @@ Cada apartado tiene **una prueba principal**. Puedes repetirla y pasar a otro ap
 | 7. Varios argumentos | Cómo enviar parejas de argumentos mediante `starmap`. |
 | 8. Reto de cubos | Cómo adaptar el cálculo y comprobar que las dos versiones dan el resultado correcto. |
 
+Los apartados 1 a 7 forman el recorrido principal, incluido `starmap`. El apartado 8 es una ampliación opcional.
+
 ## La idea central: para qué sirve Pool
 
 Un **Pool** crea un equipo de procesos trabajadores. El programa principal les entrega llamadas a una función. Cuando un trabajador termina una llamada, puede encargarse de otra: no necesitas crear un proceso nuevo para cada dato.

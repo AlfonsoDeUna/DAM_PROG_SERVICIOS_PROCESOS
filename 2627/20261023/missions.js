@@ -572,7 +572,7 @@ export const missions = [
       },
       {
         "term": "Trabajadores reutilizados",
-        "text": "Un mismo PID puede aparecer en varias tareas. chunksize=1 envía cada dato como un lote de una tarea; sin ese ajuste, map agrupa datos automáticamente."
+        "text": "Un mismo PID puede aparecer en varias tareas: el trabajador se reutiliza para realizar distintas llamadas."
       }
     ],
     "walkthrough": [
@@ -581,7 +581,7 @@ export const missions = [
       "Guarda, ejecuta y espera a que aparezca Tiempo total. Copia toda esa ejecución en «Prueba inicial»; los mensajes intermedios son parte de la prueba.",
       "Después cambia solo procesos a 1, ejecuta y pega el registro nuevo en «Experimento». Compara la reutilización de los PID y los tiempos."
     ],
-    "code": "import os\nfrom multiprocessing import Pool\nfrom time import perf_counter, sleep\n\n\ndef suma_cuadrados(numero):\n    # PID significa identificador del proceso que ejecuta esta llamada.\n    pid = os.getpid()\n    print(f\"INICIO: dato {numero}, proceso {pid}\", flush=True)\n\n    # Pausa didáctica: permite ver cómo se solapan varias tareas.\n    sleep(1)\n\n    total = 0\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n\n    # flush=True pide que el mensaje se envíe a la salida inmediatamente.\n    print(f\"FIN: dato {numero}, proceso {pid}, resultado {total}\", flush=True)\n    return total\n\n\nif __name__ == \"__main__\":\n    datos = [1, 2, 3, 4, 5, 6]\n    procesos = 2\n\n    print(\"PID del proceso principal:\", os.getpid(), flush=True)\n    inicio = perf_counter()\n\n    with Pool(processes=procesos) as pool:\n        print(\"Antes de map: entrego las tareas.\", flush=True)\n        # chunksize=1 envía cada dato como un lote de una sola tarea.\n        resultados = pool.map(suma_cuadrados, datos, chunksize=1)\n        print(\"Después de map: todos los resultados están disponibles.\", flush=True)\n\n    duracion = perf_counter() - inicio\n    print(\"Resultados:\", resultados)\n    print(f\"Tiempo total: {duracion:.2f} segundos\")\n",
+    "code": "import os\nfrom multiprocessing import Pool\nfrom time import perf_counter, sleep\n\n\ndef suma_cuadrados(numero):\n    # PID significa identificador del proceso que ejecuta esta llamada.\n    pid = os.getpid()\n    print(f\"INICIO: dato {numero}, proceso {pid}\", flush=True)\n\n    # Pausa didáctica: permite ver cómo se solapan varias tareas.\n    sleep(1)\n\n    total = 0\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n\n    # flush=True pide que el mensaje se envíe a la salida inmediatamente.\n    print(f\"FIN: dato {numero}, proceso {pid}, resultado {total}\", flush=True)\n    return total\n\n\nif __name__ == \"__main__\":\n    datos = [1, 2, 3, 4, 5, 6]\n    procesos = 2\n\n    print(\"PID del proceso principal:\", os.getpid(), flush=True)\n    inicio = perf_counter()\n\n    with Pool(processes=procesos) as pool:\n        print(\"Antes de map: entrego las tareas.\", flush=True)\n        # map reparte las llamadas entre los trabajadores y reúne sus resultados.\n        resultados = pool.map(suma_cuadrados, datos)\n        print(\"Después de map: todos los resultados están disponibles.\", flush=True)\n\n    duracion = perf_counter() - inicio\n    print(\"Resultados:\", resultados)\n    print(f\"Tiempo total: {duracion:.2f} segundos\")\n",
     "fileName": "05_observar.py",
     "command": "python 05_observar.py",
     "trials": [
@@ -670,8 +670,8 @@ export const missions = [
           "explanation": "Añade una espera didáctica de un segundo a cada tarea. Durante esa pausa el trabajador no está haciendo el cálculo."
         },
         {
-          "anchor": "pool.map(suma_cuadrados, datos, chunksize=1)",
-          "explanation": "Cada lote contiene un dato. Esto facilita seguir el reparto entre los trabajadores; si omites chunksize, map calcula automáticamente el tamaño de los lotes."
+          "anchor": "pool.map(suma_cuadrados, datos)",
+          "explanation": "map llama a la función con cada dato usando los trabajadores del Pool. Espera todas las respuestas y las devuelve en el orden de entrada."
         },
         {
           "anchor": "Después de map: todos los resultados están disponibles.",
@@ -679,7 +679,7 @@ export const missions = [
         }
       ],
       "firstRun": "Crea 05_observar.py y conserva procesos = 2, los seis datos y sleep(1). Pega toda la ejecución, desde el PID principal hasta Tiempo total.",
-      "experiment": "Después de comprobar la salida inicial, localiza procesos = 2 y cambia solo ese valor a 1. Mantén los seis datos, la pausa y chunksize=1 para comparar el reparto.",
+      "experiment": "Después de comprobar la salida inicial, localiza procesos = 2 y cambia solo ese valor a 1. Mantén los seis datos y la pausa para comparar el reparto.",
       "checkpoint": "Busca en el código qué mensaje saldrá del principal y cuáles saldrán de los trabajadores. ¿Cómo podrás distinguirlos?"
     }
   },
