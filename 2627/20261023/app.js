@@ -4,7 +4,7 @@ import { freshState as createState, normaliseState as restoreState, recordOutput
 import { buildNotebookHtml, buildNotebookPdf, notebookFilename, notebookReadiness } from './notebook.js';
 import { challengeHtml, poolLessonHtml, notebookPanelHtml, readinessHtml, outputHistoryHtml, ideaHistoryHtml, learningContextHtml, readingGuideHtml } from './classroom-ui.js';
 import { mountPoolExplainer } from './pool-explainer.js';
-import { ADMIN_ACCOUNT, verifyAdminToken } from './admin-access.js';
+import { ADMIN_ACCOUNT, verifyAdminToken } from './admin-access.js?v=20261023-access2';
 
 const STORAGE_KEY = 'pool-lab-classroom-v2';
 const $ = (id) => document.getElementById(id);
@@ -96,10 +96,14 @@ function checkReviewExpiry() {
 async function submitAdminAccess(form) {
   const input = form.querySelector('input'), button=form.querySelector('button[type="submit"]'), status=$('admin-access-status');
   if (!input || !status || inReview() || form.dataset.verifying==='true') return;
-  if (window.location.protocol!=='https:') { status.textContent='La verificación docente solo está disponible en la versión HTTPS publicada.'; return; }
+  if (window.location.protocol!=='https:') { status.dataset.state='error'; status.textContent='La verificación docente solo está disponible en la versión HTTPS publicada.'; return; }
+  const buttonLabel=button.textContent;
   button.disabled=true;
+  button.textContent='Verificando con GitHub…';
   input.disabled=true;
+  input.setAttribute('aria-invalid','false');
   form.dataset.verifying='true';
+  status.dataset.state='pending';
   status.textContent='Comprobando tu identidad con GitHub…';
   // El valor solo llega al endpoint HTTPS de GitHub y se retira del formulario enseguida.
   const verification = verifyAdminToken(input.value);
@@ -108,8 +112,17 @@ async function submitAdminAccess(form) {
     const identity = await verification;
     if (form.isConnected && $('app-dialog').open && $('app-dialog').dataset.kind==='admin') enterReview(identity);
   } catch(error) {
-    if (form.isConnected && $('app-dialog').open) { status.textContent=error.message; input.disabled=false; input.focus(); }
-  } finally { input.value=''; input.disabled=false; delete form.dataset.verifying; if (button.isConnected) button.disabled=false; }
+    if (form.isConnected && $('app-dialog').open && $('app-dialog').dataset.kind==='admin') {
+      status.dataset.state='error';
+      status.textContent=error.message;
+      input.setAttribute('aria-invalid',String(['invalid_format','unauthorized_token','wrong_account'].includes(error.code)));
+      input.disabled=false;
+      input.focus();
+    }
+  } finally {
+    input.value=''; input.disabled=false; delete form.dataset.verifying;
+    if (button.isConnected) { button.disabled=false; button.textContent=buttonLabel; }
+  }
 }
 
 function highlightPython(source) {
@@ -425,12 +438,40 @@ function openDialog(kind) {
   let html = '';
   if (kind === 'notebook' || kind === 'finish') {
     html = notebookPanelHtml(state,missions,notebookReadiness(state,missions),{review:inReview()});
+  } else if (kind === 'map') {
+    const unlocked=unlockedIndex();
+    html = `<h2 id="dialog-title">Las 8 misiones del laboratorio</h2><p class="modal-intro">${inReview()?'Estás en revisión docente: puedes abrir cualquiera de las ocho misiones.':'Este es el recorrido completo. Las misiones se abren en orden al completar las dos pruebas y la idea de la anterior.'}</p><div class="mission-overview">${missions.map((item,i)=>{
+      const locked=i>unlocked,done=state.sessions[item.id].completed;
+      return `<button class="overview-mission${i===state.current?' current':''}" data-jump="${i}" ${locked?'disabled':''}><span class="overview-number">${String(item.number).padStart(2,'0')}</span><span><strong>${esc(item.shortTitle)}</strong><small>${esc(item.category)}</small><em>${inReview()?'Disponible para revisar':done?'Superada':locked?`Se abre tras la misión ${i}`:'Disponible para empezar'}</em></span>${icon(locked?'lock':'arrow')}</button>`;
+    }).join('')}</div><div class="modal-actions"><button class="button button-outline" data-action="close-dialog">Volver al laboratorio</button><button class="button button-dark" data-action="admin">${inReview()?'Panel de revisión docente':'Acceso docente'}</button></div>`;
   } else if (kind === 'admin') {
     const secureAdminOrigin=window.location.protocol==='https:';
     if (inReview()) {
       html = `<h2 id="dialog-title">Panel de revisión docente</h2><p class="modal-intro">Cuenta verificada: <strong>${esc(reviewSession.login)}</strong>. Elige cualquier misión sin completar las anteriores. Puedes probar los mensajes de error, abrir las pistas y revisar el cuaderno.</p><div class="progress-missions">${missions.map((m,i)=>`<button class="progress-mission" data-jump="${i}"><span>${String(m.number).padStart(2,'0')}</span><strong>${esc(m.shortTitle)}</strong>${icon('arrow')}</button>`).join('')}</div><div class="modal-tip"><strong>Sesión temporal de revisión</strong><p>Los intentos de esta sesión se descartan al salir o recargar. Tu cuaderno habitual se recupera al salir. La sesión termina a las ${esc(new Date(reviewSession.expiresAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}))}.</p></div><div class="modal-actions"><button class="button button-outline" data-action="notebook">Revisar cuaderno de prueba</button><button class="button button-outline" data-action="admin-restart">Vaciar pruebas de esta revisión</button><button class="button button-dark" data-action="admin-exit">Salir de administración</button></div><p class="field-help"><a href="https://github.com/AlfonsoDeUna/DAM_PROG_SERVICIOS_PROCESOS/tree/main/2627/20261023" target="_blank" rel="noopener noreferrer">Abrir los archivos del laboratorio en GitHub ↗</a></p>`;
     } else {
-      html = `<h2 id="dialog-title">Administración · revisión docente</h2><p class="modal-intro">Acceso para <strong>${esc(ADMIN_ACCOUNT.login)}</strong>. Revisa cualquier misión, sus experimentos y el cuaderno sin completar el recorrido.</p><form id="admin-access-form" class="admin-access-form"><label for="admin-token">Token personal fine-grained de GitHub</label><input type="password" id="admin-token" name="admin-token" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2000" required ${secureAdminOrigin?'':'disabled'} placeholder="github_pat_…" aria-describedby="admin-token-help"><p id="admin-token-help">Usa un token específico, sin permisos adicionales. Se envía únicamente a la API de GitHub para verificar tu cuenta y se descarta tras la consulta. La sesión de revisión dura 30 minutos y termina al recargar.</p><button type="submit" class="button button-dark" ${secureAdminOrigin?'':'disabled'}>Verificar cuenta y entrar</button><p id="admin-access-status" class="field-help" role="status">${secureAdminOrigin?'':'La verificación docente solo está disponible en la versión HTTPS publicada.'}</p></form><details class="dialog-section admin-instructions"><summary>Crear mi acceso por primera vez</summary><ol><li>Entra en GitHub con <strong>${esc(ADMIN_ACCOUNT.login)}</strong> y abre <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>.</li><li>Crea un token con nombre <strong>Pool Lab · revisión</strong> y una caducidad breve. Selecciona tu cuenta como <strong>Resource owner</strong>.</li><li>En <strong>Repository access</strong>, usa <strong>Public repositories (read-only)</strong>. No añadas permisos de repositorio, organización ni cuenta; esta comprobación no los necesita.</li><li>Genera el token, guárdalo de forma privada y pégalo en el campo de esta ventana cada vez que quieras iniciar una revisión. No lo incluyas en los archivos del laboratorio ni en el cuaderno.</li></ol><p><a href="https://github.com/settings/personal-access-tokens/new?name=Pool%20Lab%20revision&target_name=AlfonsoDeUna&expires_in=30" target="_blank" rel="noopener noreferrer">Abrir la creación del token en GitHub ↗</a> · <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener noreferrer">Ayuda de GitHub ↗</a></p></details><div class="modal-tip"><strong>Alcance de este acceso</strong><p>GitHub comprueba tu identidad para activar la vista docente. Las lecciones y su código son públicos: este modo no convierte GitHub Pages en un área privada ni impide modificar una copia local de la página. No concede permisos para editar el repositorio.</p></div>`;
+      html = `<h2 id="dialog-title">Acceso docente</h2>
+        <p class="modal-intro">Verifica la cuenta <strong>${esc(ADMIN_ACCOUNT.login)}</strong> para abrir todas las misiones, probar los comprobadores y revisar el cuaderno. Tener GitHub abierto en otra pestaña no inicia esta sesión.</p>
+        <section class="admin-setup-card" aria-labelledby="admin-setup-title">
+          <h3 id="admin-setup-title">1. Prepara tu acceso, solo la primera vez</h3>
+          <p>Necesitas un <strong>token personal de GitHub</strong>: una clave que identifica tu cuenta. Crea uno específico para este laboratorio y sin permisos adicionales.</p>
+          <a class="button button-outline button-small" href="https://github.com/settings/personal-access-tokens/new?name=Pool%20Lab%20revision&target_name=AlfonsoDeUna&expires_in=30" target="_blank" rel="noopener noreferrer">Crear mi token en GitHub ↗</a>
+          <details class="admin-instructions"><summary>Qué opciones elegir en GitHub</summary><ol>
+            <li>Entra con <strong>${esc(ADMIN_ACCOUNT.login)}</strong>. En el formulario de <strong>Fine-grained tokens</strong>, pon el nombre <strong>Pool Lab · revisión</strong>, una caducidad breve y tu cuenta como <strong>Resource owner</strong>.</li>
+            <li>En <strong>Repository access</strong>, selecciona <strong>Public repositories (read-only)</strong>. Deja vacíos los permisos adicionales: esta verificación no los necesita.</li>
+            <li>Genera el token y cópialo completo. GitHub solo muestra ese valor al crearlo. Consérvalo de forma privada para volver a utilizarlo; no lo incluyas en el repositorio ni en el cuaderno.</li>
+            <li>Vuelve a esta ventana, pégalo debajo y pulsa <strong>Verificar cuenta y entrar</strong>.</li>
+          </ol><p><a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener noreferrer">Ayuda de GitHub sobre tokens ↗</a></p></details>
+        </section>
+        <form id="admin-access-form" class="admin-access-form">
+          <h3>2. Verifica tu cuenta y entra</h3>
+          <label for="admin-token">Token personal de GitHub</label>
+          <input type="password" id="admin-token" name="admin-token" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2000" required ${secureAdminOrigin?'':'disabled'} placeholder="github_pat_… o ghp_…" aria-describedby="admin-token-help admin-access-status">
+          <p id="admin-token-help">Admite tokens fine-grained (<code>github_pat_</code>) y clásicos (<code>ghp_</code>). Pega el token completo, no tu contraseña de GitHub. Se envía únicamente a GitHub y se borra del campo al comprobarlo.</p>
+          <button type="submit" class="button button-dark" ${secureAdminOrigin?'':'disabled'}>Verificar cuenta y entrar</button>
+          <p id="admin-access-status" class="admin-access-status" role="status" aria-live="polite" aria-atomic="true" ${secureAdminOrigin?'':'data-state="error"'}>${secureAdminOrigin?'':'La verificación docente solo está disponible en la versión HTTPS publicada.'}</p>
+          ${secureAdminOrigin?'':'<a href="https://alfonsodeuna.github.io/DAM_PROG_SERVICIOS_PROCESOS/2627/20261023/" target="_blank" rel="noopener noreferrer">Abrir el laboratorio publicado con HTTPS ↗</a>'}
+        </form>
+        <details class="dialog-section admin-instructions"><summary>Sesión y alcance del acceso</summary><p>La sesión dura 30 minutos y termina al salir o recargar. No se guarda el token. Las pruebas docentes son temporales y tu cuaderno habitual se recupera al salir.</p><p>GitHub verifica tu identidad para activar la vista docente. Las lecciones y su código son públicos: este modo no convierte GitHub Pages en un área privada ni impide modificar una copia local. No concede permisos para editar el repositorio.</p></details>`;
     }
   } else if (kind === 'setup') {
     html = `<h2 id="dialog-title">Prepara el archivo y la terminal</h2><p class="modal-intro">Trabajarás con Python 3 y un editor como VS Code. La web te guía; el archivo se ejecuta en tu ordenador.</p><div class="modal-steps"><div class="modal-step"><b>1</b><h3>Comprueba Python</h3><p>En una terminal, escribe <code>python --version</code>. Debe aparecer Python 3. Según la instalación, puedes usar <code>py --version</code> en Windows o <code>python3 --version</code>. Si ninguno se reconoce, pide ayuda al profesor para preparar Python.</p></div><div class="modal-step"><b>2</b><h3>Crea tu carpeta y tu archivo</h3><p>En VS Code, usa <strong>Archivo → Abrir carpeta</strong> y elige una carpeta para el laboratorio. Dentro, crea un archivo llamado <code>${esc(m.fileName)}</code>. Conserva la extensión <code>.py</code>.</p></div><div class="modal-step"><b>3</b><h3>Prepara y guarda el código</h3><p>${m.codeMode==='challenge'?'Escribe tu programa siguiendo los requisitos del encargo. Esta misión no proporciona una solución para copiar.':'Escribe o copia el código de partida en ese archivo; conserva los espacios al comienzo de cada línea.'} Guarda con Ctrl+S, o Cmd+S en Mac. Lee la guía y guarda tu predicción antes de ejecutar.</p></div><div class="modal-step"><b>4</b><h3>Abre una terminal en esa carpeta</h3><p>Usa <strong>Terminal → Nueva terminal</strong>. La carpeta que muestra la terminal debe contener <code>${esc(m.fileName)}</code>. Si ves <code>&gt;&gt;&gt;</code>, estás dentro de Python: escribe <code>exit()</code> para volver a la terminal.</p></div><div class="modal-step"><b>5</b><h3>Ejecuta el archivo completo</h3><p>Escribe <code>${esc(m.command)}</code> y pulsa Intro. Si en el primer paso funcionó <code>py</code> o <code>python3</code>, úsalo en lugar de <code>python</code>. Espera a que termine el programa.</p></div><div class="modal-step"><b>6</b><h3>Copia lo que ha mostrado Python</h3><p>La <strong>salida</strong> es el texto que aparece debajo del comando. Pégalo en «Prueba inicial» y compruébalo. Si aparece un error, también puedes pegar su mensaje. Cuando la primera salida coincida, se abrirá el experimento.</p></div></div><div class="modal-tip"><strong>Tres cosas diferentes:</strong> el código se escribe en el archivo .py; el comando se escribe en la terminal para ejecutarlo; la salida es lo que imprime el programa y pegas en la web.</div><div class="modal-actions"><button class="button button-dark" data-action="close-dialog">Volver a la misión ${icon('arrow')}</button></div>`;
@@ -453,6 +494,14 @@ function openDialog(kind) {
 }
 function closeDialog() { $('app-dialog').close(); }
 function closeMap() { $('sidebar').classList.remove('open'); $('map-scrim').hidden = true; $('map-toggle').setAttribute('aria-expanded','false'); }
+function openAdminDialog() {
+  if ($('sidebar').classList.contains('open')) {
+    closeMap();
+    $('map-toggle').focus();
+    if ($('app-dialog').open) lastDialogTrigger=$('map-toggle');
+  }
+  openDialog('admin');
+}
 
 $('mission-map').addEventListener('click', (e) => { const b = e.target.closest('[data-mission]'); if (b) selectMission(Number(b.dataset.mission)); });
 $('map-toggle').addEventListener('click', () => { const open = !$('sidebar').classList.contains('open'); $('sidebar').classList.toggle('open',open); $('map-scrim').hidden = !open; $('map-toggle').setAttribute('aria-expanded',open); });
@@ -493,7 +542,7 @@ $('copy-code').addEventListener('click',() => mission().code && copyText(mission
 $('download-code').addEventListener('click',() => mission().code && downloadText(mission().fileName,mission().code,'text/x-python;charset=utf-8'));
 $('copy-command').addEventListener('click',() => copyText(mission().command,'Comando copiado para tu terminal.'));
 $('next-button').addEventListener('click',() => { if (!inReview() && !session().completed) return; if (state.current === missions.length-1) openDialog('finish'); else selectMission(state.current+1); });
-for (const [id,kind] of [['how-button','how'],['setup-button','setup'],['progress-button','progress'],['mentor-button','mentor'],['mission-mentor-button','mentor'],['resources-button','resources'],['notebook-button','notebook'],['sidebar-notebook','notebook']]) $(id).addEventListener('click',() => openDialog(kind));
+for (const [id,kind] of [['how-button','how'],['setup-button','setup'],['progress-button','progress'],['mentor-button','mentor'],['mission-mentor-button','mentor'],['resources-button','resources'],['notebook-button','notebook'],['sidebar-notebook','notebook'],['all-missions-button','map']]) $(id).addEventListener('click',() => openDialog(kind));
 $('close-dialog').addEventListener('click',closeDialog);
 $('app-dialog').addEventListener('close',() => { pendingImport = null; const token=$('admin-token'); if(token) token.value=''; if (lastDialogTrigger?.isConnected) lastDialogTrigger.focus(); });
 $('app-dialog').addEventListener('click',e => {
@@ -505,6 +554,7 @@ $('app-dialog').addEventListener('click',e => {
   if (action === 'admin-exit') { exitReview(); return; }
   if (action === 'admin-restart' && inReview()) { const current=state.current; state=freshState(); state.current=current; state.profile={name:'REVISIÓN DOCENTE · muestra',group:reviewSession.login}; closeDialog(); renderMission({focus:true}); saveState(); toast('Pruebas temporales vaciadas. Puedes revisar de nuevo.'); return; }
   if (action === 'close-dialog') closeDialog();
+  if (action === 'admin') openAdminDialog();
   if (action === 'copy-report') copyText($('mentor-report').value,'Informe copiado. Vuelve a esta conversación y pégalo para revisarlo juntos.');
   if (action === 'download-report') downloadText(`pool-lab-mision-${mission().number}.txt`,buildReport());
   if (action === 'export-progress') exportProgress();
@@ -565,7 +615,7 @@ $('prediction-button').addEventListener('click',()=>{
   toast('Predicción guardada. Ahora ejecútalo y busca una evidencia.');
 });
 $('actual-code-input').addEventListener('input',()=>{session().actualCode=$('actual-code-input').value; saveSoon();});
-for (const id of ['admin-cover-button','admin-lab-button','admin-panel-button']) $(id).addEventListener('click',()=>openDialog('admin'));
+for (const id of ['admin-cover-button','admin-lab-button','admin-panel-button','admin-sidebar-button']) $(id).addEventListener('click',openAdminDialog);
 $('admin-exit-button').addEventListener('click',()=>exitReview());
 $('app-dialog').addEventListener('submit',e=>{ if (e.target.id==='admin-access-form') { e.preventDefault(); submitAdminAccess(e.target); } });
 window.addEventListener('focus',checkReviewExpiry);

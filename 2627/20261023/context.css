@@ -75,6 +75,41 @@
 .admin-access-form > p,.admin-instructions p,.admin-instructions li { font-size: 12px; color: #66715d; line-height: 1.75; }
 .admin-instructions li { margin: 10px 0; }
 .admin-instructions a { color: #496032; }
+.route-overview-button { padding: 0; border: 0; background: transparent; color: #4c6044; font: inherit; letter-spacing: .02em; text-align: left; text-decoration: underline; text-underline-offset: 3px; }
+.route-overview-button:hover { color: #203d25; }
+.sidebar-admin { margin-top: 12px; width: 100%; }
+.admin-setup-card { padding: 18px; border: 1px solid #d9dfcd; border-radius: 10px; background: #f0f3e6; }
+.admin-setup-card h3 { margin-bottom: 7px; }
+.admin-setup-card .admin-instructions { margin-top: 15px; }
+.admin-instructions summary { font-size: 12px; font-weight: 650; line-height: 1.7; cursor: pointer; }
+.admin-access-form h3 { margin-bottom: 14px; }
+.admin-access-form code { font-size: 11px; }
+.admin-access-status:empty { display: none; }
+.admin-access-status { margin: 14px 0 0; padding: 13px 15px; border: 1px solid #c9d2be; border-radius: 8px; background: #eef2e7; line-height: 1.7; }
+#dialog-content .admin-access-status[data-state="error"] { border-color: #d6a98c; background: #fff2e8; color: #874e2a; }
+.admin-access-form input[aria-invalid="true"] { border-color: #b66b43; }
+.mission-overview { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; margin: 22px 0; }
+.overview-mission { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 15px 13px; border: 1px solid #d9dfd0; border-radius: 10px; background: #f9faf3; color: #33482d; text-align: left; }
+.overview-mission.current { border-color: #acbf86; background: #eaf1d7; }
+.overview-mission:disabled { opacity: 1; cursor: not-allowed; color: #5e6b57; background: #f4f4ec; }
+.overview-number { display: grid; place-items: center; flex: 0 0 30px; height: 30px; border: 1px solid #cfd7bf; border-radius: 7px; font: 11px var(--mono); }
+.overview-mission > span:nth-child(2) { flex: 1; min-width: 0; }
+.overview-mission strong { display: block; font-size: 13px; line-height: 1.4; }
+.overview-mission small { display: block; margin-top: 4px; font-size: 11px; color: #6b765e; }
+.overview-mission em { display: block; margin-top: 7px; font-size: 10px; line-height: 1.5; font-style: normal; color: #6a775c; }
+.overview-mission > .icon { width: 15px; height: 15px; flex-shrink: 0; }
+@media(max-width:500px) { .mission-overview { grid-template-columns: 1fr; } }
+@media(max-height:700px) and (min-width:501px) {
+  #app-dialog[data-kind="map"] { padding-top: 16px; padding-bottom: 16px; }
+  #app-dialog[data-kind="map"] .dialog-top { margin-bottom: 7px; }
+  #app-dialog[data-kind="map"] h2 { font-size: 24px; }
+  #app-dialog[data-kind="map"] .modal-intro { font-size: 12px; line-height: 1.6; }
+  #app-dialog[data-kind="map"] .modal-actions { margin-top: 14px; }
+  .mission-overview { gap: 8px; margin: 16px 0; }
+  .overview-mission { padding-top: 10px; padding-bottom: 10px; }
+  .overview-mission small { display: none; }
+  .overview-mission em { margin-top: 4px; }
+}
 @media(max-width:700px) { .admin-banner { flex-direction: column; align-items: stretch; } .admin-banner-actions { flex-direction: row; flex-wrap: wrap; } .welcome-footer { flex-wrap: wrap; gap: 14px; } }
 @media(max-width:1000px) { .learning-context { padding: 21px; } .context-model { gap: 9px; } .context-model > div { padding: 14px; } }
 @media(max-width:700px) { .learning-context { padding: 20px 18px; } .context-heading h2 { font-size: 20px; } .context-model { grid-template-columns: 1fr; } .context-model dd { margin-top: 9px; } .orientation-steps { grid-template-columns: 1fr; gap: 14px; } .lab-orientation { padding: 17px; } .reading-guide { padding: 18px; } .initial-run-link { justify-content: space-between; } }

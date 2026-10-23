@@ -15,6 +15,7 @@
   --terminal-top: #253330;
   --radius: 16px;
   --shadow: 0 4px 20px rgba(34, 48, 39, .035);
+  --topbar-height: 72px;
   --sans: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
@@ -48,7 +49,7 @@ textarea { display: block; width: 100%; resize: vertical; }
 .status-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #829a61; flex: 0 0 auto; }
 
 /* The persistent frame */
-.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 20px; height: 72px; padding: 0 30px 0 25px; background: rgba(255, 254, 250, .96); border-bottom: 1px solid var(--line); }
+.topbar { position: sticky; top: 0; z-index: 50; display: flex; align-items: center; justify-content: space-between; gap: 20px; height: var(--topbar-height); padding: 0 30px 0 25px; background: rgba(255, 254, 250, .96); border-bottom: 1px solid var(--line); }
 .brand-row, .brand, .header-actions { display: flex; align-items: center; }
 .brand-row { gap: 20px; min-width: 0; }
 .brand { gap: 10px; text-decoration: none; font-size: 24px; font-weight: 800; letter-spacing: -1.2px; line-height: 1; }
@@ -77,7 +78,12 @@ textarea { display: block; width: 100%; resize: vertical; }
 .inline-button:hover { color: #1c3f22; }
 .mobile-menu { display: none; }
 .app-layout { display: grid; grid-template-columns: 224px minmax(0, 1fr); align-items: start; max-width: 1800px; margin: 0 auto; }
-.sidebar { position: sticky; top: 72px; display: flex; flex-direction: column; align-self: start; min-height: calc(100vh - 72px); max-height: calc(100vh - 72px); padding: 25px 17px 21px; border-right: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; background: #f9f9f2; scrollbar-width: thin; }
+.sidebar { position: sticky; top: var(--topbar-height); display: flex; flex-direction: column; align-self: start; height: calc(100vh - var(--topbar-height)); height: calc(100dvh - var(--topbar-height)); min-height: 0; padding: 25px 17px 21px; border-right: 1px solid var(--line); overflow-y: auto; overscroll-behavior: contain; background: #f9f9f2; scrollbar-width: auto; scrollbar-gutter: stable; scrollbar-color: #98a587 #edf0e5; }
+.sidebar > * { flex-shrink: 0; }
+.sidebar:focus-visible { outline: 3px solid #4b6948; outline-offset: -3px; }
+.sidebar::-webkit-scrollbar { width: 12px; }
+.sidebar::-webkit-scrollbar-track { background: #edf0e5; }
+.sidebar::-webkit-scrollbar-thumb { border: 3px solid #edf0e5; border-radius: 10px; background: #98a587; }
 .learner-card { display: flex; align-items: center; gap: 10px; padding: 0 5px 25px; }
 .learner-icon { display: grid; place-items: center; position: relative; width: 36px; height: 38px; border: 1px solid #d4d9c6; border-radius: 11px; background: #e8eddd; font-family: var(--mono); font-size: 14px; font-weight: 700; }
 .learner-icon i { position: absolute; right: -2px; bottom: -2px; width: 9px; height: 9px; border: 2px solid #f9f9f2; border-radius: 50%; background: #78964d; }
@@ -87,7 +93,7 @@ textarea { display: block; width: 100%; resize: vertical; }
 .route-heading { display: flex; justify-content: space-between; gap: 10px; padding: 0 7px 13px; font-size: 9px; font-weight: 700; letter-spacing: .13em; color: var(--muted); }
 .route-heading > span:last-child { font-family: var(--mono); letter-spacing: .02em; }
 .mission-map { display: flex; flex-direction: column; gap: 4px; }
-.mission-item { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; min-height: 59px; padding: 9px 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; text-align: left; }
+.mission-item { position: relative; display: flex; flex: 0 0 auto; align-items: center; gap: 10px; width: 100%; min-height: 59px; padding: 9px 8px; border: 1px solid transparent; border-radius: 10px; background: transparent; text-align: left; }
 .mission-node { display: grid; place-items: center; flex: 0 0 auto; width: 30px; height: 30px; border: 1px solid #d1d8c9; border-radius: 9px; background: #f9f9f2; color: #5d6c5f; font-family: var(--mono); font-size: 11px; font-weight: 600; }
 .mission-node .icon { width: 15px; height: 15px; }
 .mission-item-copy { display: block; flex: 1; min-width: 0; }
@@ -426,12 +432,12 @@ noscript { display: block; position: fixed; bottom: 0; left: 0; z-index: 100; wi
   .topbar { padding: 0 20px; }
   .brand-row { gap: 12px; }
   .app-layout { display: block; }
-  .sidebar { position: fixed; top: 72px; left: 0; bottom: 0; z-index: 45; width: 246px; min-height: 0; max-height: none; padding: 24px 18px; transform: translateX(-105%); transition: transform .2s ease; }
+  .sidebar { position: fixed; top: var(--topbar-height); left: 0; z-index: 45; width: 246px; padding: 24px 18px; transform: translateX(-105%); transition: transform .2s ease; }
   .sidebar.open { transform: translateX(0); box-shadow: 12px 0 35px rgba(27,42,32,.15); }
   .mission-item-copy strong { font-size: 12px; }
   .mission-item-copy small { font-size: 10px; }
   .sidebar-bottom { padding-top: 26px; }
-  .map-scrim { display: block; position: fixed; top: 72px; left: 0; right: 0; bottom: 0; z-index: 40; padding: 0; border: 0; border-radius: 0; background: rgba(25,41,29,.28); }
+  .map-scrim { display: block; position: fixed; top: var(--topbar-height); left: 0; right: 0; bottom: 0; z-index: 40; padding: 0; border: 0; border-radius: 0; background: rgba(25,41,29,.28); }
   .workspace { padding: 24px 25px 0; }
   .hero-art { flex-basis: 180px; width: 180px; }
   .hero-art > svg { height: 112px; }
@@ -446,8 +452,9 @@ noscript { display: block; position: fixed; bottom: 0; left: 0; z-index: 100; wi
   .header-actions > .text-button { font-size: 11px; }
 }
 @media (max-width: 680px) {
+  :root { --topbar-height: 64px; }
   html { scroll-padding-top: 82px; }
-  .topbar { height: 64px; padding: 0 15px; gap: 12px; }
+  .topbar { padding: 0 15px; gap: 12px; }
   .brand-row { gap: 8px; }
   .brand { gap: 7px; font-size: 23px; }
   .brand-mark { width: 30px; height: 30px; border-radius: 8px; font-size: 23px; }
@@ -458,8 +465,6 @@ noscript { display: block; position: fixed; bottom: 0; left: 0; z-index: 100; wi
   .header-actions > .text-button > span { display: none; }
   .header-actions .button-small { min-height: 34px; padding: 8px 10px; font-size: 10px; gap: 6px; }
   .header-actions .button-small .icon { width: 15px; height: 15px; }
-  .sidebar { top: 64px; }
-  .map-scrim { top: 64px; }
   .workspace { padding: 20px 20px 0; }
   .breadcrumb { margin-bottom: 24px; font-size: 9px; }
   .breadcrumb-right { font-size: 8px; }
@@ -600,4 +605,16 @@ noscript { display: block; position: fixed; bottom: 0; left: 0; z-index: 100; wi
 @media (max-width: 860px) {
   .sidebar { visibility: hidden; }
   .sidebar.open { visibility: visible; }
+}
+/* Keep all eight mission names in view on shorter screens; the footer stays scrollable. */
+@media (max-height: 800px) {
+  .sidebar { padding-top: 12px; padding-bottom: 12px; }
+  .learner-card { padding-bottom: 8px; }
+  .sidebar .learner-name { min-height: 44px; align-items: center; padding: 6px 2px; margin: 0 0 6px; }
+  .route-heading { padding-bottom: 6px; }
+  .mission-map { gap: 2px; }
+  .mission-item { min-height: 44px; padding: 5px 6px; gap: 8px; }
+  .mission-item-copy strong { font-size: 12px; }
+  .mission-item-copy small { display: none; }
+  .sidebar-bottom { padding-top: 16px; }
 }

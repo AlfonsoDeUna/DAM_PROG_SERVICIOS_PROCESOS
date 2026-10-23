@@ -7,10 +7,10 @@
   <meta name="description" content="Aprende multiprocessing.Pool con ocho misiones: ejecuta Python, experimenta y comprueba tus resultados a tu ritmo.">
   <title>Pool Lab · Laboratorio de procesos</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./styles.css?v=20261023-access2">
   <link rel="stylesheet" href="./classroom.css">
   <link rel="stylesheet" href="./pool-explainer.css">
-  <link rel="stylesheet" href="./context.css">
+  <link rel="stylesheet" href="./context.css?v=20261023-access2">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Saltar al laboratorio</a>
@@ -77,20 +77,22 @@
 
   <button id="map-scrim" class="map-scrim" aria-label="Cerrar mapa de misiones" hidden></button>
   <div class="app-layout">
-    <aside class="sidebar" id="sidebar" aria-label="Tu recorrido">
+    <aside class="sidebar" id="sidebar" aria-label="Tu recorrido" tabindex="0" aria-describedby="map-help">
       <div class="learner-card">
         <div class="learner-icon" aria-hidden="true"><span>&gt;_</span><i></i></div>
         <div><span class="eyebrow">TU RANGO</span><strong id="rank-label">Explorador</strong></div>
         <span class="level-number" id="level-label">01</span>
       </div>
       <button class="learner-name" id="profile-button" title="Volver a la portada"><span id="learner-name">Mi cuaderno</span><span aria-hidden="true">↗</span></button>
-      <div class="route-heading"><span>EL RECORRIDO</span><span id="route-count">0 / 8</span></div>
+      <p class="sr-only" id="map-help">Este menú contiene ocho misiones. Si no caben en tu pantalla, desplázate dentro del menú o pulsa «Ver las 8 misiones».</p>
+      <div class="route-heading"><button type="button" class="route-overview-button" id="all-missions-button" aria-haspopup="dialog">Ver las 8 misiones <span aria-hidden="true">↗</span></button><span id="route-count">0 / 8</span></div>
       <nav id="mission-map" class="mission-map" aria-label="Misiones de Python"></nav>
       <div class="sidebar-bottom">
         <div class="xp-line"><span><svg class="icon"><use href="#i-spark"/></svg> Tu experiencia</span><strong id="xp-label">0 XP</strong></div>
         <div class="progress-track" role="progressbar" aria-label="Progreso de las misiones" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="overall-progress"><span id="overall-fill"></span></div>
         <p class="save-label" id="save-label"><span class="status-dot"></span>Guardado en este navegador</p>
         <button class="resource-link" id="sidebar-notebook"><svg class="icon"><use href="#i-download"/></svg>Preparar mi entrega</button>
+        <button type="button" class="resource-link sidebar-admin" id="admin-sidebar-button"><svg class="icon"><use href="#i-lock"/></svg>Acceso docente</button>
       </div>
     </aside>
 
@@ -214,6 +216,6 @@
   <div class="celebration" id="celebration" aria-hidden="true"></div>
   <noscript>Activa JavaScript para iniciar el laboratorio, guardar tu cuaderno y comprobar tus resultados.</noscript>
   <script src="./vendor/pdf-lib.min.js" defer></script>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=20261023-access2"></script>
 </body>
 </html>

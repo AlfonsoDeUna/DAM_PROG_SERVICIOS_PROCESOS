@@ -70,9 +70,11 @@ El archivo **JSON es una copia para recuperar el progreso**, no sustituye al cua
 
 ## Acceso docente para revisar el laboratorio
 
-El botón **Acceso docente**, en la portada y al pie del laboratorio, abre la verificación de la cuenta de GitHub **AlfonsoDeUna**. Se contrasta su identificador numérico duradero (`248110`) mediante `GET https://api.github.com/user`; conocer el nombre de usuario no basta para entrar.
+El botón **Acceso docente**, en la portada, en el menú lateral y al pie del laboratorio, abre la verificación de la cuenta de GitHub **AlfonsoDeUna**. Se contrasta su identificador numérico duradero (`248110`) mediante `GET https://api.github.com/user`; conocer el nombre de usuario no basta para entrar.
 
-Para preparar el acceso, crear en GitHub un **personal access token fine-grained** específico para Pool Lab, con caducidad breve, **Public repositories (read-only)** y **sin permisos adicionales** de repositorios, organización o cuenta. La ventana de acceso incluye las instrucciones. Ese endpoint no exige permisos adicionales. No utilizar un token de trabajo con permisos de escritura.
+Para preparar el acceso, crear en GitHub un **personal access token fine-grained** específico para Pool Lab, con caducidad breve, **Public repositories (read-only)** y **sin permisos adicionales** de repositorios, organización o cuenta. La ventana de acceso incluye un enlace directo para crearlo y las opciones concretas que hay que seleccionar. Ese endpoint no exige permisos adicionales. También se admiten tokens clásicos `ghp_` sin scopes; se recomienda crear uno específico sin permisos. No utilizar un token de trabajo con permisos de escritura. Tener GitHub abierto en otra pestaña no inicia esta sesión: hay que pegar el token y pulsar «Verificar cuenta y entrar».
+
+Al pegar un token, se eliminan únicamente los espacios de los extremos; los espacios interiores y los formatos incorrectos se rechazan. Los mensajes distinguen un formato incorrecto, un token rechazado por GitHub, otra cuenta, un límite de peticiones y un problema de conexión. Si el token ha caducado o ha sido revocado, hay que crear otro; no hace falta ampliar sus permisos.
 
 La web envía el token directamente a la API HTTPS de GitHub, vacía el campo y no lo guarda en archivos, URL, almacenamiento del navegador ni cuadernos. Conserva solo la identidad verificada durante una sesión de 30 minutos que termina también al recargar. No hay una contraseña compartida publicada en el repositorio.
 
@@ -81,6 +83,10 @@ En la revisión se puede abrir cualquier misión o experimento, probar los mensa
 **Alcance de la protección:** GitHub verifica la cuenta que activa la vista mediante la interfaz. GitHub Pages sirve archivos públicos y el navegador recibe el código: este control no oculta lecciones ni impide que alguien altere su propia copia local. No es una zona de datos privados ni concede permisos de edición sobre el repositorio. Una administración privada con operaciones sensibles requeriría autorización en un servidor.
 
 Referencias de esta verificación: [usuario autenticado y permisos mínimos](https://docs.github.com/en/rest/users/users#get-the-authenticated-user), [gestión de tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) y [naturaleza estática de GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
+
+### Mapa de misiones y pantallas pequeñas
+
+El menú siempre incluye las ocho misiones, con su estado de disponibilidad. A poca altura se compactan los espacios y se oculta la categoría secundaria, conservando el nombre y el número. El panel completo puede desplazarse con rueda, gesto táctil o teclado. «Ver las 8 misiones» abre también un mapa completo en una ventana. En el recorrido del alumno las misiones mantienen su orden de desbloqueo; con la cuenta docente verificada todas están disponibles.
 
 ## Pauta de revisión docente
 
