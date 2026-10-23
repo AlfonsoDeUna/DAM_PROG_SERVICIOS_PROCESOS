@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f2eb">
+  <meta name="description" content="Aprende multiprocessing.Pool con ocho misiones: ejecuta Python, experimenta y comprueba tus resultados a tu ritmo.">
+  <title>Pool Lab · Laboratorio de procesos</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./classroom.css">
+  <link rel="stylesheet" href="./pool-explainer.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Saltar al laboratorio</a>
+  <svg class="icon-definitions" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M15 8V4H4v11h4"/></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></symbol>
+    <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 2.4 6.6L21 12l-6.6 2.4L12 21l-2.4-6.6L3 12l6.6-2.4Z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24"><path d="M20 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h11a3 3 0 0 1 3 3Z"/><path d="M7 8h9M7 12h6"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4m-4 5v2"/></symbol>
+    <symbol id="i-hint" viewBox="0 0 24 24"><path d="M9 18h6m-5 3h4M8 14a6 6 0 1 1 8 0l-1 2H9Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 6 6 6-6 6m9 0h7"/></symbol>
+    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="m8 12-2 9 6-3 6 3-2-9"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path d="M12 5v16M3 3h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5v16h-5a4 4 0 0 0-4 2 4 4 0 0 0-4-2H3Z"/></symbol>
+  </defs></svg>
+
+
+  <section class="welcome-screen" id="welcome-screen" aria-labelledby="welcome-title">
+    <div class="welcome-grid" aria-hidden="true"></div>
+    <div class="welcome-top"><span><i></i> PSP / 2.º DAM</span><span>PYTHON 3 · LABORATORIO 01</span></div>
+    <main class="welcome-main">
+      <p class="welcome-kicker">UN PEQUEÑO LABORATORIO. UNA GRAN IDEA.</p>
+      <svg class="pixel-wordmark" viewBox="0 0 47 7" role="img" aria-label="Pool Lab"><rect x="0" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="1" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="2" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="3" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="0" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="4" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="0" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="4" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="0" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="1" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="2" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="3" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="0" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="0" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="0" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="7" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="8" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="9" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="6" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="10" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="6" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="10" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="6" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="10" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="6" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="10" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="6" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="10" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="7" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="8" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="9" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="13" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="14" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="15" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="12" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="16" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="12" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="16" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="12" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="16" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="12" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="16" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="12" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="16" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="13" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="14" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="15" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="18" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="18" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="18" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="18" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="18" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="18" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="18" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="19" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="20" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="21" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="22" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="30" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="30" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="30" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="30" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="30" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="30" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="30" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="31" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="32" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="33" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="34" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="37" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="38" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="39" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="36" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="40" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="36" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="40" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="36" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="37" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="38" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="39" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="40" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="36" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="40" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="36" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="40" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="36" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="40" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="42" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="43" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="44" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="45" y="0" width=".88" height=".88" fill="#e9c46a"/><rect x="42" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="46" y="1" width=".88" height=".88" fill="#e9c46a"/><rect x="42" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="46" y="2" width=".88" height=".88" fill="#d8a96a"/><rect x="42" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="43" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="44" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="45" y="3" width=".88" height=".88" fill="#d8a96a"/><rect x="42" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="46" y="4" width=".88" height=".88" fill="#b48eae"/><rect x="42" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="46" y="5" width=".88" height=".88" fill="#b48eae"/><rect x="42" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="43" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="44" y="6" width=".88" height=".88" fill="#a5a9d1"/><rect x="45" y="6" width=".88" height=".88" fill="#a5a9d1"/></svg>
+      <h1 id="welcome-title">Aprende a repartir el trabajo<span class="terminal-cursor" aria-hidden="true">_</span></h1>
+      <p class="welcome-lead">Predice. Programa. Comprueba. Explica.<br>Descubre qué ocurre cuando varias tareas se encuentran con un equipo de procesos.</p>
+      <div class="welcome-panels">
+        <form id="welcome-form" class="welcome-form">
+          <div class="terminal-title"><span>~/mi-laboratorio</span><span aria-hidden="true">● ● ●</span></div>
+          <label for="student-name">¿Cómo te llamas?</label><input id="student-name" name="student-name" autocomplete="name" maxlength="80" required placeholder="Nombre y apellidos">
+          <label for="student-group">Grupo <span>(opcional)</span></label><input id="student-group" maxlength="80" placeholder="Por ejemplo: 2.º DAM A">
+          <button type="submit" class="start-button" id="start-button">Iniciar laboratorio <span aria-hidden="true">↗</span></button>
+          <p class="welcome-status" id="welcome-status">Tu nombre aparecerá en el cuaderno que entregarás.</p>
+          <button type="button" id="new-student-button" class="welcome-new" hidden>Otro alumno / nuevo cuaderno</button>
+        </form>
+        <div class="welcome-route">
+          <span class="terminal-title">TU MISIÓN</span>
+          <h2>Que el resultado tenga una explicación.</h2>
+          <ol><li><span>01–03</span><strong>Construye y mide</strong><p>Una función, varias tareas y tu propio cronómetro.</p></li><li><span>04–06</span><strong>Entiende el Pool</strong><p>Reparto, trabajadores, PID y medidas reales.</p></li><li><span>07–08</span><strong>Transfiere y demuestra</strong><p>Resuelve un reto y prepara tu cuaderno.</p></li></ol>
+          <p class="welcome-deliverable">Al terminar → <strong>cuaderno PDF para Moodle</strong></p>
+        </div>
+      </div>
+      <p class="welcome-privacy">El nombre, los intentos y las notas se guardan en este navegador. Guarda una copia para continuar en otro equipo.</p>
+    </main>
+    <footer class="welcome-footer"><span>8 MISIONES · SIN VIDAS QUE PERDER</span><span>Equivocarse también deja una pista.</span></footer>
+  </section>
+  <div id="lab-app" hidden>
+  <header class="topbar">
+    <div class="brand-row">
+      <button class="icon-button mobile-menu" id="map-toggle" aria-label="Abrir mapa de misiones" aria-expanded="false" aria-controls="sidebar"><svg class="icon"><use href="#i-menu"/></svg></button>
+      <a class="brand" href="./" aria-label="Pool Lab, inicio"><span class="brand-mark">p<span>:</span></span><span>pool<span class="brand-light">lab</span><span class="brand-dot">.</span></span></a>
+      <span class="brand-divider"></span><span class="brand-tagline">APRENDE HACIENDO</span>
+    </div>
+    <nav class="header-actions" aria-label="Herramientas del laboratorio">
+      <button class="text-button" id="how-button" aria-label="Cómo jugar"><svg class="icon"><use href="#i-book"/></svg><span>Cómo jugar</span></button>
+      <button class="text-button" id="progress-button" aria-label="Mi progreso"><svg class="icon"><use href="#i-award"/></svg><span>Mi progreso</span></button>
+      <button class="button button-dark button-small" id="notebook-button"><svg class="icon"><use href="#i-book"/></svg><span>Mi cuaderno</span></button>
+      <button class="text-button mentor-header" id="mentor-button" aria-label="Revisar con ChatGPT"><svg class="icon"><use href="#i-chat"/></svg><span>Revisar con ChatGPT</span></button>
+    </nav>
+  </header>
+
+  <button id="map-scrim" class="map-scrim" aria-label="Cerrar mapa de misiones" hidden></button>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Tu recorrido">
+      <div class="learner-card">
+        <div class="learner-icon" aria-hidden="true"><span>&gt;_</span><i></i></div>
+        <div><span class="eyebrow">TU RANGO</span><strong id="rank-label">Explorador</strong></div>
+        <span class="level-number" id="level-label">01</span>
+      </div>
+      <button class="learner-name" id="profile-button" title="Volver a la portada"><span id="learner-name">Mi cuaderno</span><span aria-hidden="true">↗</span></button>
+      <div class="route-heading"><span>EL RECORRIDO</span><span id="route-count">0 / 8</span></div>
+      <nav id="mission-map" class="mission-map" aria-label="Misiones de Python"></nav>
+      <div class="sidebar-bottom">
+        <div class="xp-line"><span><svg class="icon"><use href="#i-spark"/></svg> Tu experiencia</span><strong id="xp-label">0 XP</strong></div>
+        <div class="progress-track" role="progressbar" aria-label="Progreso de las misiones" aria-valuemin="0" aria-valuemax="8" aria-valuenow="0" id="overall-progress"><span id="overall-fill"></span></div>
+        <p class="save-label" id="save-label"><span class="status-dot"></span>Guardado en este navegador</p>
+        <button class="resource-link" id="sidebar-notebook"><svg class="icon"><use href="#i-download"/></svg>Preparar mi entrega</button>
+      </div>
+    </aside>
+
+    <main id="workspace" class="workspace">
+      <div class="breadcrumb"><span>PYTHON</span><span>/</span><span>Multiprocessing.Pool</span><span class="breadcrumb-right"><span class="status-dot"></span>Cuaderno de aprendizaje</span></div>
+      <section class="mission-hero" aria-labelledby="mission-title">
+        <div class="hero-copy">
+          <div class="mission-meta"><span class="mission-pill" id="mission-number">MISIÓN 01 / 08</span><span class="time-label" id="mission-time">8–12 min</span><span class="xp-pill">+100 XP</span></div>
+          <h1 id="mission-title">La primera señal<span class="title-dot">.</span></h1>
+          <p id="mission-narrative">Empieza con un cálculo pequeño. Ejecútalo, cambia una cosa y descubre qué ocurre.</p>
+        </div>
+        <div class="hero-art" aria-hidden="true">
+          <div class="art-caption">UNA TAREA. MUCHAS POSIBILIDADES.</div>
+          <svg viewBox="0 0 240 132" fill="none"><path d="M79 65h31v-30h34M110 65v36h34" stroke="#a7b3a2" stroke-width="2" stroke-dasharray="4 4"/><rect x="16" y="37" width="64" height="58" rx="13" fill="#1c2c28"/><path d="m35 57 9 9-9 9m15 0h12" stroke="#d7ed8d" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><rect x="144" y="11" width="76" height="47" rx="11" fill="#eef4d8" stroke="#b9c797"/><rect x="144" y="78" width="76" height="47" rx="11" fill="#eae6f4" stroke="#c4b8db"/><circle cx="162" cy="35" r="5" fill="#97ac53"/><path d="M175 30h28m-28 10h19" stroke="#768458" stroke-width="3" stroke-linecap="round"/><circle cx="162" cy="102" r="5" fill="#9579bc"/><path d="M175 97h28m-28 10h19" stroke="#9b86b8" stroke-width="3" stroke-linecap="round"/><circle class="signal-dot" cx="109" cy="65" r="4" fill="#597247"/></svg>
+          <span class="art-label">OBSERVA → EXPERIMENTA → COMPRENDE</span>
+        </div>
+      </section>
+
+      <div class="mission-objective"><span class="objective-icon"><svg class="icon"><use href="#i-spark"/></svg></span><p><strong>Tu objetivo</strong><span id="mission-goal"></span></p><a href="#check-station" class="jump-link">Ir a la prueba <svg class="icon"><use href="#i-arrow"/></svg></a></div>
+
+      <div class="workspace-grid">
+        <section class="lesson-column" aria-label="Instrucciones y código">
+          <div class="section-title"><span class="step-marker">01</span><h2>Entiende y ejecuta</h2><span class="section-kicker">EN TU ORDENADOR</span></div>
+          <section class="prediction-card" aria-labelledby="prediction-label"><div class="prediction-heading"><span class="eyebrow">ANTES DE EJECUTAR</span><span id="prediction-status">Tu primera hipótesis</span></div><label for="prediction-input" id="prediction-label"></label><textarea id="prediction-input" maxlength="5000" rows="2" placeholder="Creo que ocurrirá… porque…"></textarea><button class="button button-outline" id="prediction-button">Guardar mi predicción</button><p>Una frase basta. Después podrás contrastarla con lo que observes.</p></section>
+          <details class="concept-card" id="concept-card"><summary><svg class="icon"><use href="#i-book"/></svg>Tres ideas para orientarte<span class="details-plus">+</span></summary><div id="concepts" class="concepts"></div></details>
+          <section id="pool-lesson" class="pool-lesson" hidden></section>
+          <div id="pool-explainer" hidden></div>
+          <ol id="walkthrough" class="walkthrough"></ol>
+          <section id="code-challenge" class="code-challenge" hidden></section>
+          <div class="code-panel" id="starter-code-panel">
+            <div class="code-toolbar"><span class="file-label"><span class="python-dot"></span><span id="code-filename">01_funcion.py</span></span><div class="code-actions"><button id="download-code" title="Descargar archivo Python" aria-label="Descargar archivo Python"><svg class="icon"><use href="#i-download"/></svg></button><button id="copy-code"><svg class="icon"><use href="#i-copy"/></svg><span>Copiar</span></button></div></div>
+            <pre class="code-pre" tabindex="0" aria-label="Código de partida en Python"><code id="mission-code"></code></pre>
+            <div class="code-footer"><span class="code-status"></span>Python 3<span>·</span>Archivo completo<span class="code-foot-right">.py</span></div>
+          </div>
+          <div class="command-bar"><div><span class="eyebrow">EJECUTA EN TU TERMINAL</span><code id="run-command">python 01_funcion.py</code></div><button class="icon-button" id="copy-command" aria-label="Copiar comando"><svg class="icon"><use href="#i-copy"/></svg></button></div>
+          <p class="command-help">También puedes usar <code>py</code> o <code>python3</code>, según tu instalación. <button id="setup-button" class="inline-button">Preparar mi equipo</button></p>
+
+          <section class="experiment-card" id="experiment-card">
+            <div class="experiment-heading"><span class="step-marker lavender">02</span><h2>Ahora cambia una cosa</h2><span class="mini-tag">EXPERIMENTO</span></div>
+            <p id="experiment-prompt"></p><pre><code id="experiment-change"></code></pre>
+            <p class="experiment-foot">Antes de ejecutar, piensa: ¿qué esperas que cambie?</p>
+            <button class="text-button experiment-action" id="try-experiment">Comprobar mi experimento <svg class="icon"><use href="#i-arrow"/></svg></button>
+          </section>
+          <section class="hint-card" aria-label="Ayuda progresiva"><div class="hint-heading"><span><svg class="icon"><use href="#i-hint"/></svg>¿Necesitas una pista?</span><button class="inline-button" id="hint-button">Abrir pista 1 de 3</button></div><ol id="hint-list" class="hint-list" hidden></ol><p class="hint-foot">Las pistas forman parte del juego. No restan puntos.</p></section>
+          <details class="own-code-card" id="own-code-card"><summary><svg class="icon"><use href="#i-terminal"/></svg>Mi código ejecutado <span id="own-code-requirement">opcional</span></summary><label for="actual-code-input">Pega tu programa tal como lo has ejecutado</label><textarea id="actual-code-input" maxlength="50000" rows="10" spellcheck="false" placeholder="Tu archivo .py…"></textarea><p>Se incluirá en el cuaderno. La web comprueba las salidas; tu profesor revisará el código y la explicación.</p></details>
+        </section>
+
+        <aside class="check-column" aria-label="Comprobación de tus resultados">
+          <section class="checker-card" id="check-station" aria-labelledby="check-title">
+            <div class="checker-heading"><div class="section-title"><span class="step-marker dark">03</span><h2 id="check-title">Ponlo a prueba</h2></div><span class="terminal-sticker"><svg class="icon"><use href="#i-terminal"/></svg></span></div>
+            <p class="checker-intro">Tu código corre en tu equipo.<br>Aquí comprobamos lo que ha pasado.</p>
+            <div class="trial-tabs" role="tablist" aria-label="Prueba que quieres comprobar"><button id="trial-base" role="tab" aria-selected="true" aria-controls="trial-panel" class="active" data-trial="base"><span class="trial-status" id="status-base">1</span>Prueba inicial</button><button id="trial-variant" role="tab" aria-selected="false" aria-controls="trial-panel" data-trial="variant"><span class="trial-status" id="status-variant">2</span>Experimento</button></div>
+            <div id="trial-panel" role="tabpanel" aria-labelledby="trial-base">
+              <p class="trial-prompt" id="trial-prompt"></p>
+              <label class="field-label" for="output-input">Salida de tu terminal</label>
+              <div class="output-wrap"><span class="output-chevron" aria-hidden="true">&gt;_</span><textarea id="output-input" spellcheck="false" maxlength="50000" placeholder="Pega aquí lo que ha impreso Python…" rows="5" aria-describedby="output-help"></textarea></div>
+              <p class="field-help" id="output-help">Pega la salida, no el código. Puedes incluir la terminal completa.</p>
+              <button class="button button-lime check-button" id="check-button"><span>Comprobar resultado</span><svg class="icon"><use href="#i-arrow"/></svg></button>
+              <div id="output-feedback" class="feedback" aria-live="polite" hidden></div>
+              <div id="measurements" class="measurements" hidden></div>
+              <details class="attempt-history" id="output-history" hidden><summary>Mis comprobaciones anteriores <span id="output-history-count"></span></summary><div id="output-history-content"></div></details>
+            </div>
+            <div class="check-microcopy"><svg class="icon"><use href="#i-lock"/></svg>Tus respuestas se quedan en este navegador.</div>
+          </section>
+
+          <section class="reflection-card" aria-labelledby="reflection-title">
+            <div class="reflection-heading"><svg class="icon"><use href="#i-spark"/></svg><h2 id="reflection-title">Que se te quede la idea</h2></div>
+            <p id="reflection-question"></p><fieldset id="reflection-options"><legend class="sr-only">Elige tu explicación</legend></fieldset>
+            <button class="button button-outline idea-button" id="idea-button">Comprobar mi idea</button>
+            <div id="idea-feedback" class="feedback" aria-live="polite" hidden></div>
+            <details class="attempt-history" id="idea-history" hidden><summary>Mis respuestas y correcciones <span id="idea-history-count"></span></summary><div id="idea-history-content"></div></details>
+            <section class="evidence-notes"><label for="notes-input">Mi descubrimiento</label><p id="evidence-prompt"></p><textarea id="notes-input" maxlength="5000" placeholder="He cambiado… He observado… Esto me hace pensar que…" rows="4"></textarea><small>Tu explicación queda en el cuaderno para que el profesor pueda revisarla.</small></section>
+          </section>
+          <div class="mission-completion" id="completion-card" hidden><div class="completion-icon"><svg class="icon"><use href="#i-check"/></svg></div><div><strong>Misión superada</strong><span>+100 XP · Un paso más</span></div><svg class="icon completion-spark"><use href="#i-spark"/></svg><p id="completion-takeaway"></p></div>
+          <button class="button button-dark next-button" id="next-button" disabled><span>Completa las dos pruebas y la idea</span><svg class="icon"><use href="#i-lock"/></svg></button>
+          <button class="help-with-chat" id="mission-mentor-button"><svg class="icon"><use href="#i-chat"/></svg>¿Algo no encaja? Lo revisamos en el chat.</button>
+        </aside>
+      </div>
+      <footer class="workspace-footer"><span>Pequeños experimentos. Grandes conexiones.</span><button class="inline-button" id="resources-button">Material y referencias</button><span class="footer-code">&lt;/&gt; POOL LAB</span></footer>
+    </main>
+  </div>
+  </div>
+  <dialog id="app-dialog" aria-labelledby="dialog-title"><div class="dialog-top"><span class="eyebrow">POOL LAB</span><button class="icon-button" id="close-dialog" aria-label="Cerrar ventana"><svg class="icon"><use href="#i-close"/></svg></button></div><div id="dialog-content"></div></dialog>
+  <div class="toast" id="toast" role="status" hidden></div>
+  <div class="celebration" id="celebration" aria-hidden="true"></div>
+  <noscript>Activa JavaScript para iniciar el laboratorio, guardar tu cuaderno y comprobar tus resultados.</noscript>
+  <script src="./vendor/pdf-lib.min.js" defer></script>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
