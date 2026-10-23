@@ -1,6 +1,6 @@
 # Pool Lab · Guía de uso en el aula
 
-[Abrir el laboratorio](./)
+[Abrir el laboratorio](https://alfonsodeuna.github.io/DAM_PROG_SERVICIOS_PROCESOS/2627/20261023/)
 
 **Módulo:** Programación de Servicios y Procesos · Python.  
 **Material necesario:** Python 3, un editor y una terminal. Los programas se ejecutan como archivos `.py` en el equipo del alumno; la web recoge las salidas y organiza el cuaderno.
@@ -53,7 +53,7 @@ Los tiempos son una referencia para un grupo que ya conoce funciones, bucles y l
 
 **Título sugerido:** «Pool Lab: cuaderno de experimentos con procesos».
 
-El alumno entrega el **PDF del cuaderno descargado desde el laboratorio**, correspondiente a las misiones que haya indicado el profesor. Antes de subirlo debe abrirlo y comprobar:
+El alumno entrega el **PDF del cuaderno descargado desde el laboratorio**, correspondiente a las misiones que haya indicado el profesor. En **Mi cuaderno**, pulsa **Preparar cuaderno PDF** y después **Guardar PDF preparado**. Antes de subirlo debe abrirlo y comprobar:
 
 - Que aparecen su nombre, la fecha y el avance real del recorrido.
 - Que se incluyen sus predicciones, salidas de ambas pruebas y explicaciones propias.
