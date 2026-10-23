@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./classroom.css">
   <link rel="stylesheet" href="./pool-explainer.css">
+  <link rel="stylesheet" href="./context.css">
 </head>
 <body>
   <a class="skip-link" href="#workspace">Saltar al laboratorio</a>
@@ -57,7 +58,7 @@
       </div>
       <p class="welcome-privacy">El nombre, los intentos y las notas se guardan en este navegador. Guarda una copia para continuar en otro equipo.</p>
     </main>
-    <footer class="welcome-footer"><span>8 MISIONES · SIN VIDAS QUE PERDER</span><span>Equivocarse también deja una pista.</span></footer>
+    <footer class="welcome-footer"><span>8 MISIONES · SIN VIDAS QUE PERDER</span><span>Equivocarse también deja una pista.</span><button type="button" class="welcome-admin" id="admin-cover-button">Acceso docente</button></footer>
   </section>
   <div id="lab-app" hidden>
   <header class="topbar">
@@ -94,6 +95,10 @@
     </aside>
 
     <main id="workspace" class="workspace">
+      <section class="admin-banner" id="admin-banner" aria-label="Modo de revisión docente" hidden>
+        <div><span class="eyebrow">ADMINISTRACIÓN · REVISIÓN</span><strong id="admin-account-label"></strong><p>Todas las misiones y experimentos están disponibles. Las pruebas de esta sesión son temporales.</p></div>
+        <div class="admin-banner-actions"><button class="button button-outline button-small" id="admin-panel-button">Panel de revisión</button><button class="button button-dark button-small" id="admin-exit-button">Salir de administración</button></div>
+      </section>
       <div class="breadcrumb"><span>PYTHON</span><span>/</span><span>Multiprocessing.Pool</span><span class="breadcrumb-right"><span class="status-dot"></span>Cuaderno de aprendizaje</span></div>
       <section class="mission-hero" aria-labelledby="mission-title">
         <div class="hero-copy">
@@ -110,28 +115,59 @@
 
       <div class="mission-objective"><span class="objective-icon"><svg class="icon"><use href="#i-spark"/></svg></span><p><strong>Tu objetivo</strong><span id="mission-goal"></span></p><a href="#check-station" class="jump-link">Ir a la prueba <svg class="icon"><use href="#i-arrow"/></svg></a></div>
 
+      <section id="learning-context" class="learning-context" aria-labelledby="context-title"></section>
+      <details class="lab-orientation" id="lab-orientation">
+        <summary><svg class="icon"><use href="#i-book"/></svg>¿Es tu primera vez? Así se trabaja aquí<span class="details-plus">+</span></summary>
+        <p>Vas a usar dos ventanas: esta web te guía y tu editor ejecuta Python. Una <strong>misión</strong> es una actividad con una prueba inicial y un cambio para comparar.</p>
+        <ol class="orientation-steps">
+          <li><strong>Lee y sitúate</strong><span>Entiende qué recibe el programa, qué hace y qué debería mostrar. Debajo tienes el código o el encargo para escribirlo.</span></li>
+          <li><strong>Prepara la primera prueba</strong><span>Crea el archivo indicado, guarda una predicción y ejecuta el comando en la terminal. Una predicción es lo que crees que ocurrirá y por qué; puede ser incorrecta.</span></li>
+          <li><strong>Comprueba y experimenta</strong><span>Pega el texto que imprime Python en «Prueba inicial». Cuando coincida, se abrirá el cambio del experimento. Guarda, ejecuta otra vez y comprueba la nueva salida.</span></li>
+          <li><strong>Explica y conserva</strong><span>Responde «Comprobar mi idea» y escribe tu descubrimiento. Los intentos quedan en «Mi cuaderno», que descargarás para entregar.</span></li>
+        </ol>
+        <p class="orientation-tools"><strong>Para preparar el archivo:</strong> abre una carpeta en VS Code, crea un archivo con el nombre de esta misión y guárdalo. En <strong>Terminal → Nueva terminal</strong>, escribe el comando que aparece debajo del programa y pulsa Intro. La terminal debe estar en esa misma carpeta.</p>
+        <p class="orientation-tools">La web no ejecuta el código Python. Si ves <code>&gt;&gt;&gt;</code>, estás dentro del intérprete de Python: escribe <code>exit()</code> para volver a la terminal y ejecutar el archivo completo.</p>
+      </details>
+
       <div class="workspace-grid">
         <section class="lesson-column" aria-label="Instrucciones y código">
-          <div class="section-title"><span class="step-marker">01</span><h2>Entiende y ejecuta</h2><span class="section-kicker">EN TU ORDENADOR</span></div>
-          <section class="prediction-card" aria-labelledby="prediction-label"><div class="prediction-heading"><span class="eyebrow">ANTES DE EJECUTAR</span><span id="prediction-status">Tu primera hipótesis</span></div><label for="prediction-input" id="prediction-label"></label><textarea id="prediction-input" maxlength="5000" rows="2" placeholder="Creo que ocurrirá… porque…"></textarea><button class="button button-outline" id="prediction-button">Guardar mi predicción</button><p>Una frase basta. Después podrás contrastarla con lo que observes.</p></section>
-          <details class="concept-card" id="concept-card"><summary><svg class="icon"><use href="#i-book"/></svg>Tres ideas para orientarte<span class="details-plus">+</span></summary><div id="concepts" class="concepts"></div></details>
-          <section id="pool-lesson" class="pool-lesson" hidden></section>
-          <div id="pool-explainer" hidden></div>
-          <ol id="walkthrough" class="walkthrough"></ol>
+          <div class="section-title"><span class="step-marker">01</span><h2 id="read-program-title">Lee el programa con una guía</h2></div>
           <section id="code-challenge" class="code-challenge" hidden></section>
           <div class="code-panel" id="starter-code-panel">
             <div class="code-toolbar"><span class="file-label"><span class="python-dot"></span><span id="code-filename">01_funcion.py</span></span><div class="code-actions"><button id="download-code" title="Descargar archivo Python" aria-label="Descargar archivo Python"><svg class="icon"><use href="#i-download"/></svg></button><button id="copy-code"><svg class="icon"><use href="#i-copy"/></svg><span>Copiar</span></button></div></div>
             <pre class="code-pre" tabindex="0" aria-label="Código de partida en Python"><code id="mission-code"></code></pre>
             <div class="code-footer"><span class="code-status"></span>Python 3<span>·</span>Archivo completo<span class="code-foot-right">.py</span></div>
           </div>
+          <section id="reading-guide" class="reading-guide" aria-labelledby="reading-title"></section>
+          <details class="concept-card" id="concept-card"><summary><svg class="icon"><use href="#i-book"/></svg>Vocabulario de esta misión<span class="details-plus">+</span></summary><div id="concepts" class="concepts"></div></details>
+          <details id="pool-deep-dive" class="pool-deep-dive" hidden>
+            <summary><span><strong>Cómo funciona Pool por dentro</strong><small>Abre la lección y el simulador para explorar tareas y trabajadores.</small></span><span class="details-plus" aria-hidden="true">+</span></summary>
+            <p class="pool-fold-help">Puedes plegar este bloque en cualquier momento para volver al programa. La explicación de entrada, trabajo y salida permanece arriba.</p>
+            <section id="pool-lesson" class="pool-lesson" hidden></section>
+            <div id="pool-explainer" hidden></div>
+            <button class="button button-outline" id="pool-continue">Plegar y preparar la primera prueba <svg class="icon"><use href="#i-arrow"/></svg></button>
+          </details>
+
+          <section class="first-run" aria-labelledby="first-run-title">
+            <div class="section-title"><span class="step-marker">02</span><h2 id="first-run-title">Prepara la prueba inicial</h2></div>
+            <p id="first-run-context"></p>
+          </section>
+          <section class="prediction-card" aria-labelledby="prediction-label"><div class="prediction-heading"><span class="eyebrow" id="prediction-eyebrow">ANTES DE TU PRIMERA PRUEBA</span><span id="prediction-status">¿Qué crees que ocurrirá?</span></div><label for="prediction-input" id="prediction-label"></label><textarea id="prediction-input" maxlength="5000" rows="2" placeholder="Creo que ocurrirá… porque…"></textarea><button class="button button-outline" id="prediction-button">Guardar mi predicción</button><p>Una frase basta. No necesitas acertar: después compararás tu idea con lo observado.</p></section>
+          <h3 class="run-steps-title">Ahora, en tu ordenador</h3>
+          <ol id="walkthrough" class="walkthrough"></ol>
           <div class="command-bar"><div><span class="eyebrow">EJECUTA EN TU TERMINAL</span><code id="run-command">python 01_funcion.py</code></div><button class="icon-button" id="copy-command" aria-label="Copiar comando"><svg class="icon"><use href="#i-copy"/></svg></button></div>
-          <p class="command-help">También puedes usar <code>py</code> o <code>python3</code>, según tu instalación. <button id="setup-button" class="inline-button">Preparar mi equipo</button></p>
+          <p class="command-help">Guarda el archivo antes de ejecutar. En Windows puedes usar <code>py</code>; en otros equipos, <code>python3</code>, según tu instalación. <button id="setup-button" class="inline-button">Ayuda para preparar el archivo y la terminal</button></p>
+          <button class="button button-outline initial-run-link" id="check-initial-button">Ya lo he ejecutado: comprobar la prueba inicial <svg class="icon"><use href="#i-arrow"/></svg></button>
 
           <section class="experiment-card" id="experiment-card">
-            <div class="experiment-heading"><span class="step-marker lavender">02</span><h2>Ahora cambia una cosa</h2><span class="mini-tag">EXPERIMENTO</span></div>
-            <p id="experiment-prompt"></p><pre><code id="experiment-change"></code></pre>
-            <p class="experiment-foot">Antes de ejecutar, piensa: ¿qué esperas que cambie?</p>
-            <button class="text-button experiment-action" id="try-experiment">Comprobar mi experimento <svg class="icon"><use href="#i-arrow"/></svg></button>
+            <div class="experiment-heading"><span class="step-marker lavender">03</span><h2>Cambia una cosa y compara</h2><span class="mini-tag">EXPERIMENTO</span></div>
+            <p id="experiment-status">Primero comprueba la prueba inicial. Después se abrirá el cambio que vas a investigar.</p>
+            <div id="experiment-body" hidden>
+              <p id="experiment-context"></p>
+              <pre><code id="experiment-change"></code></pre>
+              <p class="experiment-foot">Antes de volver a ejecutar, piensa qué esperas que cambie. Modifica solo lo indicado y conserva el resto del programa.</p>
+              <button class="text-button experiment-action" id="try-experiment">Ya lo he cambiado y ejecutado: comprobar experimento <svg class="icon"><use href="#i-arrow"/></svg></button>
+            </div>
           </section>
           <section class="hint-card" aria-label="Ayuda progresiva"><div class="hint-heading"><span><svg class="icon"><use href="#i-hint"/></svg>¿Necesitas una pista?</span><button class="inline-button" id="hint-button">Abrir pista 1 de 3</button></div><ol id="hint-list" class="hint-list" hidden></ol><p class="hint-foot">Las pistas forman parte del juego. No restan puntos.</p></section>
           <details class="own-code-card" id="own-code-card"><summary><svg class="icon"><use href="#i-terminal"/></svg>Mi código ejecutado <span id="own-code-requirement">opcional</span></summary><label for="actual-code-input">Pega tu programa tal como lo has ejecutado</label><textarea id="actual-code-input" maxlength="50000" rows="10" spellcheck="false" placeholder="Tu archivo .py…"></textarea><p>Se incluirá en el cuaderno. La web comprueba las salidas; tu profesor revisará el código y la explicación.</p></details>
@@ -139,14 +175,14 @@
 
         <aside class="check-column" aria-label="Comprobación de tus resultados">
           <section class="checker-card" id="check-station" aria-labelledby="check-title">
-            <div class="checker-heading"><div class="section-title"><span class="step-marker dark">03</span><h2 id="check-title">Ponlo a prueba</h2></div><span class="terminal-sticker"><svg class="icon"><use href="#i-terminal"/></svg></span></div>
-            <p class="checker-intro">Tu código corre en tu equipo.<br>Aquí comprobamos lo que ha pasado.</p>
+            <div class="checker-heading"><div class="section-title"><h2 id="check-title">Comprueba tus salidas</h2></div><span class="terminal-sticker"><svg class="icon"><use href="#i-terminal"/></svg></span></div>
+            <p class="checker-intro">Usa este panel después de ejecutar el archivo en tu ordenador. Empieza por «Prueba inicial»; el experimento se abre cuando esa salida coincide.</p>
             <div class="trial-tabs" role="tablist" aria-label="Prueba que quieres comprobar"><button id="trial-base" role="tab" aria-selected="true" aria-controls="trial-panel" class="active" data-trial="base"><span class="trial-status" id="status-base">1</span>Prueba inicial</button><button id="trial-variant" role="tab" aria-selected="false" aria-controls="trial-panel" data-trial="variant"><span class="trial-status" id="status-variant">2</span>Experimento</button></div>
             <div id="trial-panel" role="tabpanel" aria-labelledby="trial-base">
               <p class="trial-prompt" id="trial-prompt"></p>
               <label class="field-label" for="output-input">Salida de tu terminal</label>
               <div class="output-wrap"><span class="output-chevron" aria-hidden="true">&gt;_</span><textarea id="output-input" spellcheck="false" maxlength="50000" placeholder="Pega aquí lo que ha impreso Python…" rows="5" aria-describedby="output-help"></textarea></div>
-              <p class="field-help" id="output-help">Pega la salida, no el código. Puedes incluir la terminal completa.</p>
+              <p class="field-help" id="output-help">La salida es el texto que Python muestra debajo del comando. Pega ese texto, no el archivo .py. Si aparece un error, puedes pegar también su mensaje.</p>
               <button class="button button-lime check-button" id="check-button"><span>Comprobar resultado</span><svg class="icon"><use href="#i-arrow"/></svg></button>
               <div id="output-feedback" class="feedback" aria-live="polite" hidden></div>
               <div id="measurements" class="measurements" hidden></div>
@@ -156,19 +192,20 @@
           </section>
 
           <section class="reflection-card" aria-labelledby="reflection-title">
-            <div class="reflection-heading"><svg class="icon"><use href="#i-spark"/></svg><h2 id="reflection-title">Que se te quede la idea</h2></div>
+            <div class="reflection-heading"><span class="step-marker lavender">04</span><h2 id="reflection-title">Explica lo que has descubierto</h2></div>
+            <p class="reflection-context">Responde después de comparar las dos ejecuciones. Si te equivocas, lee la explicación y vuelve a intentarlo.</p>
             <p id="reflection-question"></p><fieldset id="reflection-options"><legend class="sr-only">Elige tu explicación</legend></fieldset>
             <button class="button button-outline idea-button" id="idea-button">Comprobar mi idea</button>
             <div id="idea-feedback" class="feedback" aria-live="polite" hidden></div>
             <details class="attempt-history" id="idea-history" hidden><summary>Mis respuestas y correcciones <span id="idea-history-count"></span></summary><div id="idea-history-content"></div></details>
-            <section class="evidence-notes"><label for="notes-input">Mi descubrimiento</label><p id="evidence-prompt"></p><textarea id="notes-input" maxlength="5000" placeholder="He cambiado… He observado… Esto me hace pensar que…" rows="4"></textarea><small>Tu explicación queda en el cuaderno para que el profesor pueda revisarla.</small></section>
+            <section class="evidence-notes"><label for="notes-input">Mi descubrimiento</label><span class="evidence-requirement" id="evidence-requirement" hidden>Necesario para el cuaderno de entrega</span><p id="evidence-prompt"></p><textarea id="notes-input" maxlength="5000" placeholder="He cambiado… He observado… Esto me hace pensar que…" rows="4"></textarea><small>Tu explicación queda en el cuaderno para que el profesor pueda revisarla.</small></section>
           </section>
           <div class="mission-completion" id="completion-card" hidden><div class="completion-icon"><svg class="icon"><use href="#i-check"/></svg></div><div><strong>Misión superada</strong><span>+100 XP · Un paso más</span></div><svg class="icon completion-spark"><use href="#i-spark"/></svg><p id="completion-takeaway"></p></div>
           <button class="button button-dark next-button" id="next-button" disabled><span>Completa las dos pruebas y la idea</span><svg class="icon"><use href="#i-lock"/></svg></button>
           <button class="help-with-chat" id="mission-mentor-button"><svg class="icon"><use href="#i-chat"/></svg>¿Algo no encaja? Lo revisamos en el chat.</button>
         </aside>
       </div>
-      <footer class="workspace-footer"><span>Pequeños experimentos. Grandes conexiones.</span><button class="inline-button" id="resources-button">Material y referencias</button><span class="footer-code">&lt;/&gt; POOL LAB</span></footer>
+      <footer class="workspace-footer"><span>Pequeños experimentos. Grandes conexiones.</span><button class="inline-button" id="resources-button">Material y referencias</button><button class="inline-button" id="admin-lab-button">Acceso docente</button><span class="footer-code">&lt;/&gt; POOL LAB</span></footer>
     </main>
   </div>
   </div>

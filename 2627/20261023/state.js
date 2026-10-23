@@ -4,7 +4,7 @@ const text = (value, max = 50000) => typeof value === 'string' ? value.slice(0, 
 const date = value => typeof value === 'string' && Number.isFinite(Date.parse(value)) ? value : null;
 export function freshSession() {
   return { outputs:{base:'',variant:''}, verdicts:{}, activeTrial:'base', reflectionChoice:null, reflectionChecked:false,
-    note:'', actualCode:'', prediction:'', predictionSavedAt:null, predictionTiming:null, hints:0, attempts:0,
+    note:'', actualCode:'', prediction:'', predictionQuestion:'', predictionSavedAt:null, predictionTiming:null, hints:0, attempts:0,
     completed:false, completedAt:null, completionEvidence:null, outputHistory:[], ideaHistory:[], simulationHistory:[] };
 }
 export function freshState(missions) {
@@ -30,6 +30,7 @@ export function normaliseState(input, missions) {
     s.reflectionChoice = Number.isInteger(source.reflectionChoice) && source.reflectionChoice >= 0 && source.reflectionChoice < m.reflection.options.length ? source.reflectionChoice : null;
     s.reflectionChecked = Boolean(source.reflectionChecked && s.reflectionChoice !== null);
     for (const key of ['note','prediction']) s[key] = text(source[key],5000);
+    s.predictionQuestion = text(source.predictionQuestion,5000) || (s.prediction.trim() ? text(m.previousPredictionPrompt || m.predictionPrompt,5000) : '');
     s.actualCode = text(source.actualCode);
     s.predictionSavedAt = date(source.predictionSavedAt);
     s.predictionTiming = ['before','after'].includes(source.predictionTiming) ? source.predictionTiming : null;

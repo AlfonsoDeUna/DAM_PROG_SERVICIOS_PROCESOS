@@ -38,16 +38,21 @@ Los tiempos son una referencia para un grupo que ya conoce funciones, bucles y l
 
 ## Cómo conducir el aprendizaje
 
-1. **Predecir.** Antes de ejecutar, pedir una respuesta breve y una razón. Ejemplo: «Hay tres datos y dos trabajadores: ¿cuántas llamadas habrá?». Conservar la primera idea para poder revisarla después.
-2. **Ejecutar.** Cambiar una variable cada vez, guardar el archivo y pegar la salida real. Si aparece un error, leer el mensaje y formular una hipótesis antes de volver a probar.
-3. **Explicar.** Pedir que citen una línea, un PID, un valor o una medida que apoye su explicación. «Ha salido bien» resulta insuficiente.
-4. **Transferir.** Proponer un cambio pequeño y pedir que lo justifiquen: más trabajadores con una sola tarea, tareas muy pequeñas o una función que necesita otro número de argumentos.
+1. **Situar el trabajo.** Leer «¿Qué vamos a hacer y para qué?». Identificar la entrada, el trabajo que realizará el programa y la salida que se observará. Cada misión conecta con la anterior y aporta una guía para localizar las partes del código. En la primera, el 5 de `suma_cuadrados(5)` se explica como el límite del recorrido antes de pedir ninguna modificación.
+2. **Predecir la primera ejecución.** Preparar el archivo y pedir una respuesta breve con una razón. Las preguntas se refieren a la prueba inicial. No hace falta acertar: la primera idea se conserva para contrastarla después.
+3. **Ejecutar y comprobar la prueba inicial.** Guardar el archivo, ejecutarlo en una terminal situada en su carpeta y pegar la salida real. La ayuda distingue código, comando y salida. Si aparece un error, leer el mensaje y formular una hipótesis antes de volver a probar.
+4. **Experimentar.** El cambio se abre cuando la prueba inicial está comprobada. La consigna localiza el dato o línea que debe modificarse e indica qué conservar. Pensar qué se espera, cambiar una variable, guardar y volver a ejecutar. Este orden también se mantiene en pantallas pequeñas.
+5. **Explicar y transferir.** Pedir que citen una línea, un PID, un valor o una medida que apoye su explicación. «Ha salido bien» resulta insuficiente. Proponer después otra situación y pedir que la justifiquen: más trabajadores con una sola tarea, tareas muy pequeñas o una función que necesita otro número de argumentos.
+
+Los cuadernos ya empezados conservan sus respuestas y la pregunta de predicción que estaba asociada a ellas. Una actualización del texto no cambia retrospectivamente qué contestó el alumno.
 
 ### Dos momentos clave
 
 **Misión 3: autoría del programa.** No se proporciona el código del cronómetro. Las consignas delimitan el trabajo y el formato de salida. El alumno debe decidir cómo implementarlo y adjuntar su código al cuaderno. La ayuda puede consistir en revisar el bloque medido o consultar la documentación, sin entregar una solución completa.
 
 **Misiones 4–5: el núcleo del laboratorio.** En la 4 se construye el modelo de funcionamiento; en la 5 se busca evidencia de ese modelo en una ejecución. Resulta útil contrastar primero las explicaciones por parejas y pedir después a cada alumno que escriba la suya. No exigir que todos observen los mismos PID, el mismo reparto o los mismos tiempos.
+
+En la misión 4, el código aparece antes de la explicación ampliada. El bloque **«Cómo funciona Pool por dentro»** contiene la lección y el simulador y puede plegarse; su botón final lleva a preparar la primera prueba. La introducción de tareas, trabajadores y proceso principal sigue visible fuera de ese bloque. En la misión 8, las pistas orientan sobre el cálculo sin proporcionar la expresión Python que resuelve el TODO.
 
 ## Entrega en Moodle
 
@@ -62,6 +67,20 @@ El alumno entrega el **PDF del cuaderno descargado desde el laboratorio**, corre
 - Que los apartados aún pendientes están identificados. Una entrega parcial debe indicarlo expresamente.
 
 El archivo **JSON es una copia para recuperar el progreso**, no sustituye al cuaderno que se entrega. Puede conservarlo el alumno y adjuntarlo solo si el profesor lo solicita. No es necesario entregar capturas de cada clic: las salidas y las explicaciones relevantes quedan reunidas en el cuaderno.
+
+## Acceso docente para revisar el laboratorio
+
+El botón **Acceso docente**, en la portada y al pie del laboratorio, abre la verificación de la cuenta de GitHub **AlfonsoDeUna**. Se contrasta su identificador numérico duradero (`248110`) mediante `GET https://api.github.com/user`; conocer el nombre de usuario no basta para entrar.
+
+Para preparar el acceso, crear en GitHub un **personal access token fine-grained** específico para Pool Lab, con caducidad breve, **Public repositories (read-only)** y **sin permisos adicionales** de repositorios, organización o cuenta. La ventana de acceso incluye las instrucciones. Ese endpoint no exige permisos adicionales. No utilizar un token de trabajo con permisos de escritura.
+
+La web envía el token directamente a la API HTTPS de GitHub, vacía el campo y no lo guarda en archivos, URL, almacenamiento del navegador ni cuadernos. Conserva solo la identidad verificada durante una sesión de 30 minutos que termina también al recargar. No hay una contraseña compartida publicada en el repositorio.
+
+En la revisión se puede abrir cualquier misión o experimento, probar los mensajes de los comprobadores y revisar el cuaderno. Se utiliza un cuaderno temporal identificado como **REVISIÓN DOCENTE · muestra**. No se conceden misiones superadas ni XP por estas pruebas. Al salir se recupera el cuaderno habitual; los cambios temporales se descartan. La importación, el reinicio y la exportación JSON del cuaderno del alumno no forman parte de esta vista.
+
+**Alcance de la protección:** GitHub verifica la cuenta que activa la vista mediante la interfaz. GitHub Pages sirve archivos públicos y el navegador recibe el código: este control no oculta lecciones ni impide que alguien altere su propia copia local. No es una zona de datos privados ni concede permisos de edición sobre el repositorio. Una administración privada con operaciones sensibles requeriría autorización en un servidor.
+
+Referencias de esta verificación: [usuario autenticado y permisos mínimos](https://docs.github.com/en/rest/users/users#get-the-authenticated-user), [gestión de tokens](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) y [naturaleza estática de GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages).
 
 ## Pauta de revisión docente
 

@@ -1,0 +1,80 @@
+/* Contexto y lectura guiada: primero el programa, después la predicción. */
+.learning-context { margin: 0 0 19px; padding: 25px 27px; border: 1px solid #d6dcca; border-radius: 14px; background: #fafbf4; }
+.context-heading .eyebrow { color: #67774e; font-size: 10px; letter-spacing: .12em; }
+.context-heading h2 { margin: 8px 0 13px; color: #283b30; font-size: 22px; font-weight: 650; letter-spacing: -.4px; }
+.context-bridge,.context-scenario { max-width: 88ch; color: #465342; font-size: 14px; line-height: 1.75; }
+.context-bridge { margin: 0 0 9px; font-weight: 600; }
+.context-scenario { margin: 0 0 20px; }
+.context-model { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 0; gap: 13px; }
+.context-model > div { padding: 17px; border: 1px solid #dce2d3; border-radius: 10px; background: #fffef9; }
+.context-model > div:nth-child(2) { border-color: #dcd4e7; background: #f3f0f8; }
+.context-model dt span { display: block; color: #33432e; font-size: 14px; font-weight: 700; }
+.context-model dt small { display: block; margin-top: 4px; color: #6c7564; font-size: 11px; }
+.context-model dd { margin: 12px 0 0; color: #4c5748; font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }
+.lab-orientation { margin: 0 0 26px; padding: 17px 21px; border: 1px solid #dcded5; border-radius: 11px; background: #f9f8f2; }
+.lab-orientation > summary { display: flex; align-items: center; gap: 9px; color: #49553f; font-size: 13px; font-weight: 650; cursor: pointer; list-style: none; }
+.lab-orientation > summary::-webkit-details-marker { display:none; }
+.lab-orientation > summary .details-plus { margin-left: auto; }
+.lab-orientation > p { font-size: 13px; line-height: 1.75; color: #5b6255; }
+.orientation-steps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px 28px; padding-left: 22px; margin: 18px 0; color: #48583b; }
+.orientation-steps li { padding-left: 4px; font-size: 13px; line-height: 1.7; }
+.orientation-steps strong,.orientation-steps span { display: block; }
+.orientation-steps strong { margin-bottom: 4px; }
+.orientation-steps span { color: #68705f; }
+.orientation-tools { border-top: 1px solid #e1e3d7; padding-top: 13px; margin: 13px 0 0; }
+.reading-guide { margin: 18px 0; padding: 20px; border: 1px solid #dedfd5; border-radius: 11px; background: #fdfcf7; }
+.reading-guide h3 { margin: 0 0 8px; color: #354832; font-size: 15px; font-weight: 650; }
+.reading-intro { margin: 0 0 15px; color: #6a705f; font-size: 12px; line-height: 1.7; }
+.reading-guide ol { margin: 0; padding: 0; list-style: none; counter-reset: reading; }
+.reading-guide li { position: relative; margin: 0; padding: 0 0 15px 29px; counter-increment: reading; }
+.reading-guide li::before { content: counter(reading); position: absolute; left: 0; top: 2px; display: grid; place-items: center; width: 19px; height: 19px; border-radius: 5px; background: #ecf0df; color: #5a6e3d; font: 600 10px/1 monospace; }
+.reading-guide li code { display: inline-block; padding: 4px 7px; max-width: 100%; border-radius: 4px; background: #edf0e6; color: #344630; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+.reading-guide li p { margin: 6px 0 0; color: #58634e; font-size: 13px; line-height: 1.75; }
+.reading-checkpoint { margin: 0; padding-top: 14px; border-top: 1px solid #e1e4d7; font-size: 12px; line-height: 1.75; color: #65714e; }
+.reading-checkpoint strong { display: block; margin-bottom: 4px; color: #495c36; }
+.first-run { margin-top: 26px; }
+.first-run > p { font-size: 13px; color: #59674e; line-height: 1.75; margin: 14px 0 16px; }
+.run-steps-title { margin: 22px 0 14px; font-size: 14px; font-weight: 650; color: #405137; }
+.initial-run-link { width: 100%; font-size: 12px; line-height: 1.5; padding: 11px 13px; white-space: normal; text-align: left; }
+.experiment-heading { flex-wrap: wrap; }
+.experiment-card #experiment-status { margin: 0; font-size: 12px; color: #756280; line-height: 1.7; }
+.experiment-card #experiment-body { margin-top: 15px; }
+.experiment-card #experiment-body[hidden] { display: none; }
+.experiment-card #experiment-body > p { margin: 0 0 12px; color: #6d587f; font-size: 13px; line-height: 1.75; }
+.experiment-card #experiment-body > pre { margin: 0 0 12px; padding: 12px; overflow-x: auto; border: 1px solid #dfd6e9; border-radius: 7px; color: #604a72; background: #ffffff6b; font-size: 12px; }
+.experiment-card #experiment-body .experiment-foot { font-size: 12px; }
+.experiment-action { max-width: 100%; white-space: normal; text-align: left; line-height: 1.65; }
+.trial-tabs button:disabled { color: #7c8275; opacity: .65; cursor: not-allowed; }
+.checker-intro { line-height: 1.75; }
+.reflection-card .reflection-context { font-size: 12px; color: #74816a; line-height: 1.75; margin: 10px 0 18px; }
+.reflection-heading h2 { font-size: 16px; line-height: 1.4; }
+.pool-deep-dive { margin: 20px 0; border: 1px solid #cbd8bb; border-radius: 12px; padding: 19px; background: #f5f8ed; }
+.pool-deep-dive > summary { display: flex; align-items: center; gap: 14px; cursor: pointer; color: #3c5131; list-style: none; }
+.pool-deep-dive > summary::-webkit-details-marker { display: none; }
+.pool-deep-dive > summary strong,.pool-deep-dive > summary small { display: block; }
+.pool-deep-dive > summary strong { font-size: 14px; line-height: 1.5; }
+.pool-deep-dive > summary small { margin-top: 5px; font-size: 12px; color: #69755d; line-height: 1.6; }
+.pool-deep-dive > summary .details-plus { margin-left: auto; flex-shrink: 0; }
+.pool-deep-dive[open] > summary .details-plus { transform: rotate(45deg); }
+.pool-fold-help { margin: 18px 0 0; font-size: 12px; color: #68765c; line-height: 1.7; }
+.pool-deep-dive > .pool-lesson { margin: 18px 0; padding: 18px; }
+.pool-deep-dive > button { margin-top: 18px; white-space: normal; text-align: left; font-size: 12px; line-height: 1.6; }
+.evidence-requirement { display: inline-block; margin: 7px 0 2px; padding: 5px 8px; border-radius: 5px; background: #edf1df; color: #5c7142; font-size: 10px; line-height: 1.5; }
+.evidence-requirement[hidden] { display: none; }
+.welcome-admin { border: 1px solid #55594a; border-radius: 4px; padding: 7px 10px; color: #d5d4bf; background: transparent; font: inherit; cursor: pointer; }
+.welcome-admin:hover { color: #e9c46a; border-color: #e9c46a; }
+.admin-banner { display: flex; gap: 20px; align-items: center; justify-content: space-between; margin-bottom: 24px; padding: 18px 20px; border: 1px solid #c3b3d8; border-radius: 12px; background: #eeebf6; }
+.admin-banner[hidden] { display: none; }
+.admin-banner .eyebrow { display: block; color: #796092; font-size: 10px; }
+.admin-banner strong { display: block; margin-top: 6px; color: #59456d; font-size: 14px; }
+.admin-banner p { margin: 7px 0 0; color: #746282; font-size: 12px; line-height: 1.65; }
+.admin-banner-actions { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+.admin-access-form { margin: 20px 0; }
+.admin-access-form label { display: block; font-size: 13px; font-weight: 650; margin-bottom: 9px; color: #374b33; }
+.admin-access-form input { display: block; width: 100%; padding: 13px; border: 1px solid #cbd3c3; border-radius: 8px; background: #fffef9; color: #263c2a; font: 14px/1.6 monospace; }
+.admin-access-form > p,.admin-instructions p,.admin-instructions li { font-size: 12px; color: #66715d; line-height: 1.75; }
+.admin-instructions li { margin: 10px 0; }
+.admin-instructions a { color: #496032; }
+@media(max-width:700px) { .admin-banner { flex-direction: column; align-items: stretch; } .admin-banner-actions { flex-direction: row; flex-wrap: wrap; } .welcome-footer { flex-wrap: wrap; gap: 14px; } }
+@media(max-width:1000px) { .learning-context { padding: 21px; } .context-model { gap: 9px; } .context-model > div { padding: 14px; } }
+@media(max-width:700px) { .learning-context { padding: 20px 18px; } .context-heading h2 { font-size: 20px; } .context-model { grid-template-columns: 1fr; } .context-model dd { margin-top: 9px; } .orientation-steps { grid-template-columns: 1fr; gap: 14px; } .lab-orientation { padding: 17px; } .reading-guide { padding: 18px; } .initial-run-link { justify-content: space-between; } }

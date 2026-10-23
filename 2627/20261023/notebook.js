@@ -140,7 +140,7 @@ export function buildNotebookText(state, missions = []) {
   for (const [index, mission] of list.entries()) {
     const s = sessionFor(state, mission);
     const idea = currentIdea(mission, s);
-    lines.push(missionName(mission, index).toUpperCase(), `Objetivo: ${text(mission.goal)}`, `Estado del recorrido: ${s.completed ? 'Superada' : 'En curso'}`, `Finalización registrada: ${formatDate(s.completedAt)}`, '', predictionLabel(s).toUpperCase(), `Momento de registro: ${formatDate(s.predictionSavedAt)}`, text(mission.predictionPrompt), hasText(s.prediction) ? s.prediction : '(Sin predicción registrada.)', '');
+    lines.push(missionName(mission, index).toUpperCase(), `Objetivo: ${text(mission.goal)}`, `Estado del recorrido: ${s.completed ? 'Superada' : 'En curso'}`, `Finalización registrada: ${formatDate(s.completedAt)}`, '', predictionLabel(s).toUpperCase(), `Momento de registro: ${formatDate(s.predictionSavedAt)}`, text(s.predictionQuestion || mission.predictionPrompt), hasText(s.prediction) ? s.prediction : '(Sin predicción registrada.)', '');
     for (const trial of array(mission.trials)) {
       const verdict = s.verdicts?.[trial.id];
       lines.push(text(trial.label).toUpperCase(), text(trial.prompt));
@@ -204,6 +204,7 @@ function ideaHistoryHtml(mission, session) {
 }
 function missionHtml(state, mission, index) {
   const s = sessionFor(state, mission);
+  const predictionQuestion = s.predictionQuestion || mission.predictionPrompt;
   const idea = currentIdea(mission, s);
   const used = hintsUsed(mission, s);
   return `<section class="mission" id="mision-${index + 1}">
@@ -211,7 +212,7 @@ function missionHtml(state, mission, index) {
     <h2>${esc(mission.shortTitle || mission.title)}</h2>
     <div class="mission-meta"><span>${s.completed ? 'Misión superada' : 'Misión en curso'}</span><span>Finalización: ${esc(formatDate(s.completedAt))}</span></div>
     <p class="goal"><strong>Objetivo.</strong> ${esc(mission.goal)}</p>
-    <h3>${esc(predictionLabel(s))}</h3><p class="small">Momento de registro: ${esc(formatDate(s.predictionSavedAt))}</p>${mission.predictionPrompt ? `<p class="question">${esc(mission.predictionPrompt)}</p>` : ''}${answerHtml(s.prediction, 'Sin predicción registrada.')}
+    <h3>${esc(predictionLabel(s))}</h3><p class="small">Momento de registro: ${esc(formatDate(s.predictionSavedAt))}</p>${predictionQuestion ? `<p class="question">${esc(predictionQuestion)}</p>` : ''}${answerHtml(s.prediction, 'Sin predicción registrada.')}
     ${array(mission.trials).map(trial => `<section class="trial"><h3>${esc(trial.label)}</h3><p class="question">${esc(trial.prompt)}</p>${trial.change ? `<p class="question"><strong>Cambio pedido:</strong> ${esc(trial.change)}</p>` : ''}<p class="label">Salida actual aportada</p>${outputHtml(s.outputs?.[trial.id])}${verdictHtml(s.verdicts?.[trial.id])}</section>`).join('')}
     <h3>Historial de comprobaciones de salida</h3><p class="question">Conservo los intentos para mostrar qué he probado, qué falló y cómo he avanzado.</p>${outputHistoryHtml(mission, s)}
     <h3>Que se me quede la idea</h3><p>${esc(mission.reflection?.question)}</p><p><strong>Respuesta actual:</strong> ${esc(namedChoice(mission, s.reflectionChoice))}</p><div class="check${!s.reflectionChecked ? ' pending-check' : s.reflectionChoice === mission.reflection?.correct ? '' : ' wrong'}"><strong>${esc(idea.status)}</strong><p>${esc(idea.feedback)}</p></div>
@@ -333,7 +334,7 @@ export async function buildNotebookPdf(state, missions = [], PDFLib) {
     heading(missionName(mission, index), 2, true);
     paragraph(`Estado: ${s.completed ? 'Superada' : 'En curso'}  |  Finalización: ${formatDate(s.completedAt)}`, { size: 8.5, color: muted });
     paragraph(`Objetivo: ${text(mission.goal)}`, { size: 10, after: 13 });
-    ownAnswer(predictionLabel(s), s.prediction, mission.predictionPrompt);
+    ownAnswer(predictionLabel(s), s.prediction, s.predictionQuestion || mission.predictionPrompt);
     paragraph(`Momento de registro: ${formatDate(s.predictionSavedAt)}`, { size: 8, color: muted });
     for (const trial of array(mission.trials)) {
       heading(trial.label, 3); paragraph(trial.prompt, { size: 8.8, color: muted });

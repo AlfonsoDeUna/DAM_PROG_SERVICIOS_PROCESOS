@@ -2,8 +2,9 @@ import { missions } from './missions.js';
 import { checkOutput } from './checks.js';
 import { freshState as createState, normaliseState as restoreState, recordOutput, recordIdea } from './state.js';
 import { buildNotebookHtml, buildNotebookPdf, notebookFilename, notebookReadiness } from './notebook.js';
-import { challengeHtml, poolLessonHtml, notebookPanelHtml, readinessHtml, outputHistoryHtml, ideaHistoryHtml } from './classroom-ui.js';
+import { challengeHtml, poolLessonHtml, notebookPanelHtml, readinessHtml, outputHistoryHtml, ideaHistoryHtml, learningContextHtml, readingGuideHtml } from './classroom-ui.js';
 import { mountPoolExplainer } from './pool-explainer.js';
+import { ADMIN_ACCOUNT, verifyAdminToken } from './admin-access.js';
 
 const STORAGE_KEY = 'pool-lab-classroom-v2';
 const $ = (id) => document.getElementById(id);
@@ -16,6 +17,9 @@ let toastTimer;
 let lastDialogTrigger;
 let pendingImport = null;
 let disposePool = null;
+let reviewSession = null;
+let studentSnapshot = null;
+let adminExpiryTimer;
 
 function freshState() { return createState(missions); }
 function normaliseState(input) { return restoreState(input,missions); }
@@ -32,16 +36,81 @@ function loadState() {
 let state = loadState();
 const mission = () => missions[state.current];
 const session = () => state.sessions[mission().id];
+const hasInitialTrial = s => Boolean(s.verdicts.base?.ok || s.outputHistory.some(h=>h.trial==='base' && h.ok) || s.completionEvidence);
 const completedCount = () => missions.filter(m => state.sessions[m.id].completed).length;
-const unlockedIndex = () => { const i = missions.findIndex(m => !state.sessions[m.id].completed); return i === -1 ? missions.length - 1 : i; };
+const inReview = () => reviewSession !== null;
+const unlockedIndex = () => { if (inReview()) return missions.length - 1; const i = missions.findIndex(m => !state.sessions[m.id].completed); return i === -1 ? missions.length - 1 : i; };
 function saveState() {
   clearTimeout(saveTimer);
+  if (inReview()) {
+    $('save-label').innerHTML = '<span class="status-dot"></span>Revisión temporal · no se guarda al cerrar';
+    return;
+  }
   state.updatedAt = new Date().toISOString();
   try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); storageAvailable = true; }
   catch { storageAvailable = false; }
   $('save-label').innerHTML = `<span class="status-dot${storageAvailable ? '' : ' warning'}"></span>${storageAvailable ? 'Guardado en este navegador' : 'Guarda una copia en Mi progreso'}`;
 }
 function saveSoon() { clearTimeout(saveTimer); saveTimer = setTimeout(saveState, 300); }
+
+function enterReview(identity) {
+  if (inReview()) return;
+  saveState();
+  let stored = null;
+  try { stored = localStorage.getItem(STORAGE_KEY); } catch {}
+  studentSnapshot = {state:structuredClone(state),cover:!$('welcome-screen').hidden,stored};
+  closeDialog();
+  pendingImport = null;
+  reviewSession = identity;
+  state = freshState();
+  state.profile = {name:'REVISIÓN DOCENTE · muestra',group:identity.login};
+  $('welcome-screen').hidden = true;
+  $('lab-app').hidden = false;
+  renderMission({focus:true});
+  saveState();
+  clearTimeout(adminExpiryTimer);
+  adminExpiryTimer = setTimeout(()=>exitReview(true),Math.max(0,identity.expiresAt-Date.now()));
+  toast('Cuenta verificada. Puedes revisar todas las misiones con pruebas temporales.');
+}
+function exitReview(expired=false) {
+  if (!inReview() || !studentSnapshot) return;
+  clearTimeout(saveTimer);
+  clearTimeout(adminExpiryTimer);
+  pendingImport = null;
+  closeDialog();
+  const previous = studentSnapshot;
+  reviewSession = null;
+  studentSnapshot = null;
+  state = previous.state;
+  // Si otro tab ha guardado avances durante la revisión, conserva esa copia más reciente.
+  try { const current = localStorage.getItem(STORAGE_KEY); if (current && current !== previous.stored) state = normaliseState(JSON.parse(current)); } catch {}
+  renderMission({focus:!previous.cover});
+  $('save-label').innerHTML = `<span class="status-dot${storageAvailable?'':' warning'}"></span>${storageAvailable?'Guardado en este navegador':'Guarda una copia en Mi progreso'}`;
+  if (previous.cover) showCover();
+  else { $('welcome-screen').hidden=true; $('lab-app').hidden=false; }
+  toast(expired?'La sesión docente ha caducado. Tu cuaderno habitual está disponible.':'Revisión cerrada. Has vuelto a tu cuaderno habitual.');
+}
+function checkReviewExpiry() {
+  if (inReview() && Date.now() >= reviewSession.expiresAt) exitReview(true);
+}
+async function submitAdminAccess(form) {
+  const input = form.querySelector('input'), button=form.querySelector('button[type="submit"]'), status=$('admin-access-status');
+  if (!input || !status || inReview() || form.dataset.verifying==='true') return;
+  if (window.location.protocol!=='https:') { status.textContent='La verificación docente solo está disponible en la versión HTTPS publicada.'; return; }
+  button.disabled=true;
+  input.disabled=true;
+  form.dataset.verifying='true';
+  status.textContent='Comprobando tu identidad con GitHub…';
+  // El valor solo llega al endpoint HTTPS de GitHub y se retira del formulario enseguida.
+  const verification = verifyAdminToken(input.value);
+  input.value='';
+  try {
+    const identity = await verification;
+    if (form.isConnected && $('app-dialog').open && $('app-dialog').dataset.kind==='admin') enterReview(identity);
+  } catch(error) {
+    if (form.isConnected && $('app-dialog').open) { status.textContent=error.message; input.disabled=false; input.focus(); }
+  } finally { input.value=''; input.disabled=false; delete form.dataset.verifying; if (button.isConnected) button.disabled=false; }
+}
 
 function highlightPython(source) {
   const pattern = /#[^\n]*|(?:f|r)?"(?:\\.|[^"\\])*"|(?:f|r)?'(?:\\.|[^'\\])*'|\b(?:def|return|for|in|if|from|import|with|as|True|False|None|else)\b|\b(?:print|range|len|Pool|perf_counter|sleep)\b|\b\d[\d_]*(?:\.\d+)?\b/g;
@@ -57,12 +126,14 @@ function highlightPython(source) {
 }
 function renderPrediction() {
   const s=session(), m=mission(), locked=Boolean(s.predictionSavedAt);
-  $('prediction-label').textContent=m.predictionPrompt || '¿Qué crees que va a ocurrir? ¿Por qué?';
+  $('prediction-label').textContent=s.predictionQuestion || m.predictionPrompt || '¿Qué crees que va a ocurrir en la primera prueba? ¿Por qué?';
   $('prediction-input').value=s.prediction;
   $('prediction-input').readOnly=locked;
   $('prediction-button').disabled=locked;
   $('prediction-button').textContent=locked?'Predicción guardada':'Guardar mi predicción';
-  $('prediction-status').textContent=locked?(s.predictionTiming==='after'?'Registrada después de una prueba':'Conservamos tu idea inicial'):'Tu primera hipótesis';
+  const earlierQuestion = s.predictionQuestion && s.predictionQuestion !== m.predictionPrompt;
+  $('prediction-eyebrow').textContent=earlierQuestion?'TU PREDICCIÓN CONSERVADA':'ANTES DE TU PRIMERA PRUEBA';
+  $('prediction-status').textContent=earlierQuestion?'Conservamos la pregunta de tu cuaderno':locked?(s.predictionTiming==='after'?'Registrada después de una prueba':'Conservamos tu idea inicial'):'¿Qué crees que ocurrirá?';
 }
 function renderHistories() {
   const s=session(),m=mission();
@@ -127,12 +198,12 @@ async function downloadNotebookPdf(button) {
 function renderMap() {
   const count = completedCount(), unlocked = unlockedIndex();
   $('learner-name').textContent = state.profile.name || 'Mi cuaderno';
-  $('route-count').textContent = `${count} / ${missions.length}`;
-  $('xp-label').textContent = `${count * 100} XP`;
+  $('route-count').textContent = inReview() ? '8 disponibles' : `${count} / ${missions.length}`;
+  $('xp-label').textContent = inReview() ? 'Vista de prueba' : `${count * 100} XP`;
   $('overall-fill').style.width = `${count / missions.length * 100}%`;
   $('overall-progress').setAttribute('aria-valuenow', count);
   const rank = count === 8 ? 'Piloto de procesos' : count >= 6 ? 'Investigador' : count >= 4 ? 'Constructor' : count >= 2 ? 'Analista' : 'Explorador';
-  $('rank-label').textContent = rank;
+  $('rank-label').textContent = inReview() ? 'Revisión docente' : rank;
   $('level-label').textContent = String(Math.min(count + 1, 8)).padStart(2, '0');
   $('mission-map').innerHTML = missions.map((m, i) => {
     const done = state.sessions[m.id].completed, locked = i > unlocked, current = i === state.current;
@@ -146,7 +217,13 @@ function showFeedback(element, data, extra = '') {
   element.innerHTML = `<strong>${data.ok ? icon('check') : icon('hint')}${esc(data.title)}</strong><p>${esc(data.message)}</p>${data.details?.length ? `<ul>${data.details.map(d => `<li>${esc(d)}</li>`).join('')}</ul>` : ''}${extra}`;
 }
 function renderTrial() {
-  const m = mission(), s = session(), t = m.trials.find(t => t.id === s.activeTrial);
+  const m = mission(), s = session(), initialDone = inReview() || hasInitialTrial(s);
+  if (!initialDone && s.activeTrial === 'variant') s.activeTrial = 'base';
+  const t = m.trials.find(t => t.id === s.activeTrial);
+  $('trial-variant').disabled = !initialDone;
+  $('trial-variant').title = initialDone ? 'Comprueba la segunda ejecución, después del cambio indicado.' : 'Primero comprueba la salida de la prueba inicial.';
+  $('experiment-body').hidden = !initialDone;
+  $('experiment-status').textContent = inReview() ? 'Disponible para revisión docente. En el recorrido del alumno se abre tras comprobar la prueba inicial.' : initialDone ? 'La prueba inicial ya está comprobada. Ahora observa qué ocurre al modificar solo lo indicado.' : 'Primero comprueba la prueba inicial. Después se abrirá el cambio que vas a investigar.';
   for (const item of m.trials) {
     const active = item.id === t.id, passed = s.verdicts[item.id]?.ok;
     const tab = $(`trial-${item.id}`);
@@ -189,6 +266,7 @@ function renderReflection() {
   } else showFeedback($('idea-feedback'), null);
   $('notes-input').value = s.note;
   $('evidence-prompt').textContent = m.evidencePrompt || 'Explica qué ha ocurrido y qué dato te permite afirmarlo.';
+  $('evidence-requirement').hidden = !['pool','pids','benchmark'].includes(m.id);
   renderHistories();
 }
 function renderHints() {
@@ -202,11 +280,14 @@ function renderCompletion() {
   const m = mission(), s = session();
   $('completion-card').hidden = !s.completed;
   $('completion-takeaway').textContent = m.takeaway;
-  $('next-button').disabled = !s.completed;
-  $('next-button').innerHTML = s.completed ? `<span>${state.current === missions.length - 1 ? 'Preparar mi cuaderno para entregar' : 'Siguiente misión'}</span>${icon('arrow')}` : `<span>Completa las dos pruebas y la idea</span>${icon('lock')}`;
+  $('next-button').disabled = !inReview() && !s.completed;
+  $('next-button').innerHTML = inReview() ? `<span>${state.current === missions.length - 1 ? 'Revisar el cuaderno de prueba' : 'Revisar la siguiente misión'}</span>${icon('arrow')}` : s.completed ? `<span>${state.current === missions.length - 1 ? 'Preparar mi cuaderno para entregar' : 'Siguiente misión'}</span>${icon('arrow')}` : `<span>Completa las dos pruebas y la idea</span>${icon('lock')}`;
 }
 function renderMission({focus = false} = {}) {
   const m = mission(), s = session();
+  $('admin-banner').hidden = !inReview();
+  $('admin-account-label').textContent = inReview() ? `${reviewSession.login} · sesión de 30 minutos` : '';
+  $('admin-lab-button').textContent = inReview() ? 'Panel de revisión docente' : 'Acceso docente';
   disposePool?.(); disposePool = null;
   document.title = `${m.shortTitle} · Pool Lab`;
   $('mission-number').textContent = `MISIÓN ${String(m.number).padStart(2,'0')} / 08`;
@@ -214,6 +295,14 @@ function renderMission({focus = false} = {}) {
   $('mission-title').innerHTML = esc(m.title) + '<span class="title-dot">.</span>';
   $('mission-narrative').textContent = m.narrative;
   $('mission-goal').textContent = m.goal;
+  $('learning-context').innerHTML = learningContextHtml(m.learningContext);
+  $('learning-context').hidden = !m.learningContext;
+  $('reading-guide').innerHTML = readingGuideHtml(m.learningContext,m.codeMode==='challenge');
+  $('reading-guide').hidden = !m.learningContext;
+  $('read-program-title').textContent = m.codeMode==='challenge' ? 'Lee el encargo antes de programar' : 'Lee el programa con una guía';
+  $('first-run-context').textContent = m.learningContext?.firstRun || m.trials[0].prompt;
+  $('experiment-context').textContent = m.learningContext?.experiment || '';
+  $('lab-orientation').open = m.number === 1 && !s.completed;
   $('concepts').innerHTML = m.concepts.map(c => `<div><strong>${esc(c.term)}</strong><p>${esc(c.text)}</p></div>`).join('');
   $('walkthrough').innerHTML = m.walkthrough.map(text => `<li><p>${esc(text)}</p></li>`).join('');
   $('code-filename').textContent = m.fileName;
@@ -222,6 +311,8 @@ function renderMission({focus = false} = {}) {
   $('code-challenge').hidden = !m.challenge;
   $('code-challenge').innerHTML = m.challenge ? challengeHtml(m.challenge) : '';
   $('pool-lesson').hidden = !m.poolLesson;
+  $('pool-deep-dive').hidden = !m.poolLesson;
+  $('pool-deep-dive').open = false;
   $('pool-lesson').innerHTML = m.poolLesson ? poolLessonHtml(m.poolLesson) : '';
   $('pool-explainer').hidden = !m.poolLesson;
   if (m.poolLesson) disposePool = mountPoolExplainer($('pool-explainer'),{onComplete:run=>{state.sessions[m.id].simulationHistory.push(run); saveState(); toast('Exploración guardada en tu cuaderno como modelo didáctico.');}});
@@ -231,7 +322,6 @@ function renderMission({focus = false} = {}) {
   $('own-code-card').open = ['timer','final'].includes(m.id);
   renderPrediction();
   $('run-command').textContent = m.command;
-  $('experiment-prompt').textContent = m.trials[1].prompt;
   $('experiment-change').textContent = m.trials[1].change || 'Sigue las indicaciones del experimento.';
   renderMap(); renderTrial(); renderReflection(); renderHints(); renderCompletion();
   if (focus) {
@@ -248,11 +338,16 @@ function selectMission(index) {
   renderMission({focus:true}); saveState();
 }
 function selectTrial(id, focus = false) {
+  if (id === 'variant' && !inReview() && !hasInitialTrial(session())) {
+    toast('Comprueba primero la salida de la prueba inicial. Después abriremos el experimento.');
+    return;
+  }
   session().activeTrial = id === 'variant' ? 'variant' : 'base';
   renderTrial(); saveState();
   if (focus) { $('check-station').scrollIntoView({behavior:'auto',block:'start'}); $('output-input').focus({preventScroll:true}); }
 }
 function maybeComplete() {
+  if (inReview()) return;
   const s = session(), m = mission();
   if (s.completed || !s.predictionSavedAt || !m.trials.every(t => s.verdicts[t.id]?.ok) || !s.reflectionChecked || s.reflectionChoice !== m.reflection.correct) return;
   s.completed = true;
@@ -318,19 +413,29 @@ function buildReport(m = mission()) {
   for (const t of m.trials) {
     lines.push(t.label.toUpperCase(), t.prompt, ...(t.change ? [`Cambio pedido: ${t.change}`] : []), 'Salida que he pegado:', s.outputs[t.id] || '(Todavía no he pegado una salida.)', `Comprobación automática: ${s.verdicts[t.id] ? s.verdicts[t.id].ok ? 'La salida coincide.' : s.verdicts[t.id].title + '. ' + s.verdicts[t.id].message : 'Pendiente.'}`, '');
   }
-  lines.push('MI PREDICCIÓN',s.prediction || '(Pendiente.)','','MI RAZONAMIENTO',m.reflection.question,`He elegido: ${s.reflectionChoice === null ? '(Sin responder.)' : m.reflection.options[s.reflectionChoice]}`,`Mis observaciones o dudas: ${s.note || '(Sin anotaciones.)'}`,'','MI CÓDIGO');
+  lines.push('MI PREDICCIÓN',s.predictionQuestion || m.predictionPrompt,s.prediction || '(Pendiente.)','','MI RAZONAMIENTO',m.reflection.question,`He elegido: ${s.reflectionChoice === null ? '(Sin responder.)' : m.reflection.options[s.reflectionChoice]}`,`Mis observaciones o dudas: ${s.note || '(Sin anotaciones.)'}`,'','MI CÓDIGO');
   lines.push(s.actualCode || 'No he adjuntado el código que he ejecutado. Necesito incorporarlo para que puedas revisarlo.', '', 'Ayúdame a interpretar lo observado y dime qué cambio concreto puedo probar a continuación.');
   return lines.join('\n');
 }
 function openDialog(kind) {
   const dialog = $('app-dialog');
+  if (inReview() && ['progress','reset'].includes(kind)) kind='admin';
   if (!dialog.open) lastDialogTrigger = document.activeElement;
   const m = mission(), s = session(), count = completedCount();
   let html = '';
   if (kind === 'notebook' || kind === 'finish') {
-    html = notebookPanelHtml(state,missions,notebookReadiness(state,missions));
-  } else if (kind === 'how' || kind === 'setup') {
-    html = `<h2 id="dialog-title">${kind === 'setup'?'Prepara tu laboratorio':'El resultado necesita una explicación'}</h2><p class="modal-intro">Python se ejecuta en tu equipo. La web acompaña el experimento y guarda las evidencias en tu cuaderno.</p><div class="modal-steps"><div class="modal-step"><b>1</b><h3>Predice</h3><p>Escribe qué crees que ocurrirá y por qué. Guarda esa primera idea antes de comprobar la salida.</p></div><div class="modal-step"><b>2</b><h3>Programa y ejecuta</h3><p>Usa archivos .py completos desde la terminal de VS Code. Comprueba <code>python --version</code>; también puedes usar <code>py</code> o <code>python3</code>. Los ejemplos no necesitan paquetes de pip.</p></div><div class="modal-step"><b>3</b><h3>Cambia y explica</h3><p>Pega la primera salida, realiza el experimento y comprueba la nueva. Responde la pregunta, lee la corrección y anota una observación respaldada por un dato.</p></div><div class="modal-step"><b>4</b><h3>Entrega tu cuaderno</h3><p>Completa la síntesis final en «Mi cuaderno», descarga el PDF y súbelo a Moodle. En las misiones 3 y 8 debes aportar tu código.</p></div></div><div class="modal-tip">Dos salidas comprobadas y una idea correcta desbloquean una misión. Los errores y las pistas no restan puntos. Los XP muestran recorrido; tu profesor valorará la comprensión y las evidencias.</div><div class="modal-actions"><button class="button button-dark" data-action="close-dialog">Volver al laboratorio ${icon('arrow')}</button></div>`;
+    html = notebookPanelHtml(state,missions,notebookReadiness(state,missions),{review:inReview()});
+  } else if (kind === 'admin') {
+    const secureAdminOrigin=window.location.protocol==='https:';
+    if (inReview()) {
+      html = `<h2 id="dialog-title">Panel de revisión docente</h2><p class="modal-intro">Cuenta verificada: <strong>${esc(reviewSession.login)}</strong>. Elige cualquier misión sin completar las anteriores. Puedes probar los mensajes de error, abrir las pistas y revisar el cuaderno.</p><div class="progress-missions">${missions.map((m,i)=>`<button class="progress-mission" data-jump="${i}"><span>${String(m.number).padStart(2,'0')}</span><strong>${esc(m.shortTitle)}</strong>${icon('arrow')}</button>`).join('')}</div><div class="modal-tip"><strong>Sesión temporal de revisión</strong><p>Los intentos de esta sesión se descartan al salir o recargar. Tu cuaderno habitual se recupera al salir. La sesión termina a las ${esc(new Date(reviewSession.expiresAt).toLocaleTimeString('es-ES',{hour:'2-digit',minute:'2-digit'}))}.</p></div><div class="modal-actions"><button class="button button-outline" data-action="notebook">Revisar cuaderno de prueba</button><button class="button button-outline" data-action="admin-restart">Vaciar pruebas de esta revisión</button><button class="button button-dark" data-action="admin-exit">Salir de administración</button></div><p class="field-help"><a href="https://github.com/AlfonsoDeUna/DAM_PROG_SERVICIOS_PROCESOS/tree/main/2627/20261023" target="_blank" rel="noopener noreferrer">Abrir los archivos del laboratorio en GitHub ↗</a></p>`;
+    } else {
+      html = `<h2 id="dialog-title">Administración · revisión docente</h2><p class="modal-intro">Acceso para <strong>${esc(ADMIN_ACCOUNT.login)}</strong>. Revisa cualquier misión, sus experimentos y el cuaderno sin completar el recorrido.</p><form id="admin-access-form" class="admin-access-form"><label for="admin-token">Token personal fine-grained de GitHub</label><input type="password" id="admin-token" name="admin-token" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="2000" required ${secureAdminOrigin?'':'disabled'} placeholder="github_pat_…" aria-describedby="admin-token-help"><p id="admin-token-help">Usa un token específico, sin permisos adicionales. Se envía únicamente a la API de GitHub para verificar tu cuenta y se descarta tras la consulta. La sesión de revisión dura 30 minutos y termina al recargar.</p><button type="submit" class="button button-dark" ${secureAdminOrigin?'':'disabled'}>Verificar cuenta y entrar</button><p id="admin-access-status" class="field-help" role="status">${secureAdminOrigin?'':'La verificación docente solo está disponible en la versión HTTPS publicada.'}</p></form><details class="dialog-section admin-instructions"><summary>Crear mi acceso por primera vez</summary><ol><li>Entra en GitHub con <strong>${esc(ADMIN_ACCOUNT.login)}</strong> y abre <strong>Settings → Developer settings → Personal access tokens → Fine-grained tokens</strong>.</li><li>Crea un token con nombre <strong>Pool Lab · revisión</strong> y una caducidad breve. Selecciona tu cuenta como <strong>Resource owner</strong>.</li><li>En <strong>Repository access</strong>, usa <strong>Public repositories (read-only)</strong>. No añadas permisos de repositorio, organización ni cuenta; esta comprobación no los necesita.</li><li>Genera el token, guárdalo de forma privada y pégalo en el campo de esta ventana cada vez que quieras iniciar una revisión. No lo incluyas en los archivos del laboratorio ni en el cuaderno.</li></ol><p><a href="https://github.com/settings/personal-access-tokens/new?name=Pool%20Lab%20revision&target_name=AlfonsoDeUna&expires_in=30" target="_blank" rel="noopener noreferrer">Abrir la creación del token en GitHub ↗</a> · <a href="https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener noreferrer">Ayuda de GitHub ↗</a></p></details><div class="modal-tip"><strong>Alcance de este acceso</strong><p>GitHub comprueba tu identidad para activar la vista docente. Las lecciones y su código son públicos: este modo no convierte GitHub Pages en un área privada ni impide modificar una copia local de la página. No concede permisos para editar el repositorio.</p></div>`;
+    }
+  } else if (kind === 'setup') {
+    html = `<h2 id="dialog-title">Prepara el archivo y la terminal</h2><p class="modal-intro">Trabajarás con Python 3 y un editor como VS Code. La web te guía; el archivo se ejecuta en tu ordenador.</p><div class="modal-steps"><div class="modal-step"><b>1</b><h3>Comprueba Python</h3><p>En una terminal, escribe <code>python --version</code>. Debe aparecer Python 3. Según la instalación, puedes usar <code>py --version</code> en Windows o <code>python3 --version</code>. Si ninguno se reconoce, pide ayuda al profesor para preparar Python.</p></div><div class="modal-step"><b>2</b><h3>Crea tu carpeta y tu archivo</h3><p>En VS Code, usa <strong>Archivo → Abrir carpeta</strong> y elige una carpeta para el laboratorio. Dentro, crea un archivo llamado <code>${esc(m.fileName)}</code>. Conserva la extensión <code>.py</code>.</p></div><div class="modal-step"><b>3</b><h3>Prepara y guarda el código</h3><p>${m.codeMode==='challenge'?'Escribe tu programa siguiendo los requisitos del encargo. Esta misión no proporciona una solución para copiar.':'Escribe o copia el código de partida en ese archivo; conserva los espacios al comienzo de cada línea.'} Guarda con Ctrl+S, o Cmd+S en Mac. Lee la guía y guarda tu predicción antes de ejecutar.</p></div><div class="modal-step"><b>4</b><h3>Abre una terminal en esa carpeta</h3><p>Usa <strong>Terminal → Nueva terminal</strong>. La carpeta que muestra la terminal debe contener <code>${esc(m.fileName)}</code>. Si ves <code>&gt;&gt;&gt;</code>, estás dentro de Python: escribe <code>exit()</code> para volver a la terminal.</p></div><div class="modal-step"><b>5</b><h3>Ejecuta el archivo completo</h3><p>Escribe <code>${esc(m.command)}</code> y pulsa Intro. Si en el primer paso funcionó <code>py</code> o <code>python3</code>, úsalo en lugar de <code>python</code>. Espera a que termine el programa.</p></div><div class="modal-step"><b>6</b><h3>Copia lo que ha mostrado Python</h3><p>La <strong>salida</strong> es el texto que aparece debajo del comando. Pégalo en «Prueba inicial» y compruébalo. Si aparece un error, también puedes pegar su mensaje. Cuando la primera salida coincida, se abrirá el experimento.</p></div></div><div class="modal-tip"><strong>Tres cosas diferentes:</strong> el código se escribe en el archivo .py; el comando se escribe en la terminal para ejecutarlo; la salida es lo que imprime el programa y pegas en la web.</div><div class="modal-actions"><button class="button button-dark" data-action="close-dialog">Volver a la misión ${icon('arrow')}</button></div>`;
+  } else if (kind === 'how') {
+    html = `<h2 id="dialog-title">Así se completa una misión</h2><p class="modal-intro">Empieza por entender el ejemplo. Después podrás comprobarlo y hacer tu propio experimento.</p><div class="modal-steps"><div class="modal-step"><b>1</b><h3>Lee y sitúate</h3><p>El bloque «¿Qué vamos a hacer y para qué?» explica los datos, el trabajo y la salida. La guía de lectura te ayuda a encontrar cada parte del programa.</p></div><div class="modal-step"><b>2</b><h3>Predice la primera ejecución</h3><p>Prepara el archivo y escribe qué crees que mostrará y por qué. Guarda tu predicción antes de ejecutar. No hace falta acertar: la compararás con lo observado.</p></div><div class="modal-step"><b>3</b><h3>Ejecuta y comprueba</h3><p>Guarda el archivo, ejecútalo en tu terminal y pega su salida en «Prueba inicial». Si algo falla, lee la explicación, revisa tu programa y vuelve a probar.</p></div><div class="modal-step"><b>4</b><h3>Cambia una cosa y compara</h3><p>Después de comprobar la primera salida se abre el experimento. Localiza el cambio indicado, piensa qué debería ocurrir y guarda y ejecuta otra vez. Pega la nueva salida en «Experimento».</p></div><div class="modal-step"><b>5</b><h3>Explica y guarda tu evidencia</h3><p>Responde «Comprobar mi idea» y anota tu descubrimiento con una línea, un valor o una medida de tu ejecución. Los errores y las correcciones también forman parte del cuaderno.</p></div><div class="modal-step"><b>6</b><h3>Prepara la entrega</h3><p>En «Mi cuaderno», completa la síntesis y revisa lo pendiente. En las misiones 3 y 8 debes aportar tu código; en la 4, 5 y 6, tus observaciones. Prepara el PDF, guárdalo y ábrelo antes de subirlo a la tarea.</p></div></div><div class="modal-tip">Dos salidas comprobadas y una idea correcta desbloquean una misión. Los errores y las pistas no restan puntos. Los XP muestran recorrido; tu profesor valorará la comprensión y las evidencias.</div><div class="modal-actions"><button class="button button-outline" data-action="setup">Cómo preparar mi equipo</button><button class="button button-dark" data-action="close-dialog">Volver al laboratorio ${icon('arrow')}</button></div>`;
   } else if (kind === 'mentor') {
     html = `<h2 id="dialog-title">Revisión con ChatGPT</h2><p class="modal-intro">Copia el informe y pégalo en tu conversación. Incluye esta misión, tus salidas, tu respuesta y tus anotaciones.</p><div class="modal-tip"><strong>1. Copia el informe. 2. Pégalo en el chat.</strong><p>La página no envía mensajes automáticamente. Esta ayuda no sustituye tu cuaderno de entrega ni la revisión docente.</p></div><details class="dialog-section"><summary>Añadir mi código ejecutado</summary><label for="mentor-code">Tu archivo Python</label><textarea class="code-input" id="mentor-code" maxlength="50000" spellcheck="false" rows="6">${esc(s.actualCode)}</textarea></details><label class="field-label" for="mentor-report">Informe listo para compartir</label><textarea class="report-textarea" id="mentor-report" readonly rows="11">${esc(buildReport())}</textarea><div class="modal-actions"><button class="button button-outline" data-action="download-report">Descargar informe</button><button class="button button-dark" data-action="copy-report">Copiar para ChatGPT</button></div>`;
   } else if (kind === 'progress') {
@@ -352,10 +457,11 @@ function closeMap() { $('sidebar').classList.remove('open'); $('map-scrim').hidd
 $('mission-map').addEventListener('click', (e) => { const b = e.target.closest('[data-mission]'); if (b) selectMission(Number(b.dataset.mission)); });
 $('map-toggle').addEventListener('click', () => { const open = !$('sidebar').classList.contains('open'); $('sidebar').classList.toggle('open',open); $('map-scrim').hidden = !open; $('map-toggle').setAttribute('aria-expanded',open); });
 $('map-scrim').addEventListener('click',closeMap);
+$('pool-continue').addEventListener('click',()=>{ $('pool-deep-dive').open=false; $('first-run-title').tabIndex=-1; $('first-run-title').focus({preventScroll:true}); $('first-run-title').scrollIntoView({behavior:'smooth',block:'start'}); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMap(); });
 for (const id of ['base','variant']) $(`trial-${id}`).addEventListener('click',() => selectTrial(id));
 document.querySelector('.trial-tabs').addEventListener('keydown',e => {
-  if (['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) { e.preventDefault(); const id = e.key === 'Home' ? 'base' : e.key === 'End' ? 'variant' : session().activeTrial === 'base' ? 'variant' : 'base'; selectTrial(id); $(`trial-${id}`).focus(); }
+  if (['ArrowLeft','ArrowRight','Home','End'].includes(e.key)) { e.preventDefault(); const id = e.key === 'Home' ? 'base' : e.key === 'End' ? 'variant' : session().activeTrial === 'base' ? 'variant' : 'base'; if (!$(`trial-${id}`).disabled) { selectTrial(id); $(`trial-${id}`).focus(); } }
 });
 $('output-input').addEventListener('input', () => {
   const s = session(); s.outputs[s.activeTrial] = $('output-input').value; delete s.verdicts[s.activeTrial];
@@ -364,12 +470,13 @@ $('output-input').addEventListener('input', () => {
 });
 $('check-button').addEventListener('click', () => {
   const s = session(), t = mission().trials.find(t => t.id === s.activeTrial);
-  if (!s.predictionSavedAt) { showFeedback($('output-feedback'),{ok:false,info:true,title:'Guarda primero tu predicción',message:'Escribe qué crees que ocurrirá y por qué, en el bloque «Antes de ejecutar». Después comprobamos la salida.'}); $('prediction-input').focus(); return; }
+  if (!inReview() && !s.predictionSavedAt) { showFeedback($('output-feedback'),{ok:false,info:true,title:'Guarda primero tu predicción',message:'Tras leer el contexto y la guía del programa, escribe qué crees que ocurrirá en «Prepara la prueba inicial» y pulsa «Guardar mi predicción». No necesitas acertar para continuar.'}); $('prediction-input').focus(); return; }
   const output=$('output-input').value;
   recordOutput(s,t.id,output,checkOutput(t.check,output));
   maybeComplete(); renderTrial(); renderCompletion(); renderMap(); saveState();
 });
-$('output-feedback').addEventListener('click',e => { if (e.target.closest('[data-action="experiment"]')) selectTrial('variant',true); });
+$('output-feedback').addEventListener('click',e => { if (e.target.closest('[data-action="experiment"]')) { selectTrial('variant'); $('experiment-card').scrollIntoView({behavior:'auto',block:'start'}); } });
+$('check-initial-button').addEventListener('click',()=>selectTrial('base',true));
 $('try-experiment').addEventListener('click',() => selectTrial('variant',true));
 $('reflection-options').addEventListener('change',e => {
   if (e.target.name !== 'reflection') return;
@@ -385,15 +492,18 @@ $('hint-button').addEventListener('click',() => { session().hints = Math.min(ses
 $('copy-code').addEventListener('click',() => mission().code && copyText(mission().code,'Código copiado. Pégalo en tu archivo de Python.'));
 $('download-code').addEventListener('click',() => mission().code && downloadText(mission().fileName,mission().code,'text/x-python;charset=utf-8'));
 $('copy-command').addEventListener('click',() => copyText(mission().command,'Comando copiado para tu terminal.'));
-$('next-button').addEventListener('click',() => { if (!session().completed) return; if (state.current === missions.length-1) openDialog('finish'); else selectMission(state.current+1); });
+$('next-button').addEventListener('click',() => { if (!inReview() && !session().completed) return; if (state.current === missions.length-1) openDialog('finish'); else selectMission(state.current+1); });
 for (const [id,kind] of [['how-button','how'],['setup-button','setup'],['progress-button','progress'],['mentor-button','mentor'],['mission-mentor-button','mentor'],['resources-button','resources'],['notebook-button','notebook'],['sidebar-notebook','notebook']]) $(id).addEventListener('click',() => openDialog(kind));
 $('close-dialog').addEventListener('click',closeDialog);
-$('app-dialog').addEventListener('close',() => { pendingImport = null; if (lastDialogTrigger?.isConnected) lastDialogTrigger.focus(); });
+$('app-dialog').addEventListener('close',() => { pendingImport = null; const token=$('admin-token'); if(token) token.value=''; if (lastDialogTrigger?.isConnected) lastDialogTrigger.focus(); });
 $('app-dialog').addEventListener('click',e => {
   const target = e.target.closest('[data-action],[data-jump]');
   if (!target) return;
   if (target.dataset.jump != null) { closeDialog(); selectMission(Number(target.dataset.jump)); return; }
   const action = target.dataset.action;
+  if (inReview() && ['choose-import','confirm-import','cancel-import','reset-dialog','confirm-reset','export-progress'].includes(action)) return;
+  if (action === 'admin-exit') { exitReview(); return; }
+  if (action === 'admin-restart' && inReview()) { const current=state.current; state=freshState(); state.current=current; state.profile={name:'REVISIÓN DOCENTE · muestra',group:reviewSession.login}; closeDialog(); renderMission({focus:true}); saveState(); toast('Pruebas temporales vaciadas. Puedes revisar de nuevo.'); return; }
   if (action === 'close-dialog') closeDialog();
   if (action === 'copy-report') copyText($('mentor-report').value,'Informe copiado. Vuelve a esta conversación y pégalo para revisarlo juntos.');
   if (action === 'download-report') downloadText(`pool-lab-mision-${mission().number}.txt`,buildReport());
@@ -401,6 +511,7 @@ $('app-dialog').addEventListener('click',e => {
   if (action === 'choose-import') $('import-file').click();
   if (action === 'reset-dialog') openDialog('reset');
   if (action === 'progress') openDialog('progress');
+  if (action === 'setup') openDialog('setup');
   if (action === 'notebook') openDialog('notebook');
   if (action === 'download-notebook') { saveState(); downloadText(notebookFilename(state,missions,'html'),buildNotebookHtml(state,missions),'text/html;charset=utf-8'); }
   if (action === 'download-pdf') downloadNotebookPdf(target);
@@ -413,20 +524,25 @@ $('app-dialog').addEventListener('input',e => {
   if (e.target.dataset.final) { state.finalReflection[e.target.dataset.final]=e.target.value; $('notebook-readiness').innerHTML=readinessHtml(notebookReadiness(state,missions)); saveSoon(); }
 });
 $('app-dialog').addEventListener('change',async e => {
-  if (e.target.id !== 'import-file' || !e.target.files[0]) return;
-  const file = e.target.files[0];
+  if (inReview() || e.target.id !== 'import-file' || !e.target.files[0]) return;
+  const file = e.target.files[0], input=e.target, importState=state;
+  const importStillCurrent=()=>!inReview() && state===importState && input.isConnected && $('app-dialog').open && $('app-dialog').dataset.kind==='progress';
   try {
     if (file.size > 20_000_000) throw new Error('La copia es demasiado grande. Elige un archivo exportado desde Pool Lab.');
-    pendingImport = normaliseState(JSON.parse(await file.text()));
+    const contents=await file.text();
+    if (!importStillCurrent()) return;
+    pendingImport = normaliseState(JSON.parse(contents));
     const count = missions.filter(m => pendingImport.sessions[m.id].completed).length;
     $('import-result').innerHTML = `<div class="modal-tip"><strong>Copia de ${esc(pendingImport.profile.name || "alumno sin identificar")}: ${count}/8 misiones superadas.</strong><p>Al recuperarla se reemplaza el progreso actual de este navegador.</p><div class="modal-actions"><button class="button button-outline" data-action="cancel-import">Cancelar</button><button class="button button-dark" data-action="confirm-import">Recuperar esta copia</button></div></div>`;
   } catch(error) {
+    if (!importStillCurrent()) return;
     pendingImport = null;
     $('import-result').innerHTML = `<div class="feedback error"><strong>No se ha cambiado tu progreso</strong><p>${esc(error instanceof SyntaxError ? 'El archivo no contiene un JSON válido de Pool Lab.' : error.message)}</p></div>`;
   }
 });
 $('welcome-form').addEventListener('submit',e=>{
   e.preventDefault();
+  if (inReview()) return;
   const name=$('student-name').value.trim();
   if(!name) { $('student-name').setCustomValidity('Escribe tu nombre para identificar el cuaderno.'); $('student-name').reportValidity(); return; }
   $('student-name').setCustomValidity('');
@@ -437,17 +553,24 @@ $('welcome-form').addEventListener('submit',e=>{
 });
 $('student-name').addEventListener('input',()=> $('student-name').setCustomValidity(''));
 $('new-student-button').addEventListener('click',()=>openDialog('reset'));
-$('profile-button').addEventListener('click',showCover);
-$('prediction-input').addEventListener('input',()=>{ if(!session().predictionSavedAt) {session().prediction=$('prediction-input').value;saveSoon();} });
+$('profile-button').addEventListener('click',()=>inReview()?openDialog('admin'):showCover());
+$('prediction-input').addEventListener('input',()=>{ if(!session().predictionSavedAt) {session().prediction=$('prediction-input').value;session().predictionQuestion ||= mission().predictionPrompt;saveSoon();} });
 $('prediction-button').addEventListener('click',()=>{
   const s=session();
   if(!s.prediction.trim()) { toast('Escribe una frase: qué crees que pasará y por qué.'); $('prediction-input').focus(); return; }
+  s.predictionQuestion ||= mission().predictionPrompt;
   s.predictionSavedAt=new Date().toISOString();
   s.predictionTiming=s.outputHistory.length || s.attempts ? 'after' : 'before';
   renderPrediction(); renderTrial(); maybeComplete(); renderCompletion(); renderMap(); saveState();
   toast('Predicción guardada. Ahora ejecútalo y busca una evidencia.');
 });
 $('actual-code-input').addEventListener('input',()=>{session().actualCode=$('actual-code-input').value; saveSoon();});
+for (const id of ['admin-cover-button','admin-lab-button','admin-panel-button']) $(id).addEventListener('click',()=>openDialog('admin'));
+$('admin-exit-button').addEventListener('click',()=>exitReview());
+$('app-dialog').addEventListener('submit',e=>{ if (e.target.id==='admin-access-form') { e.preventDefault(); submitAdminAccess(e.target); } });
+window.addEventListener('focus',checkReviewExpiry);
+window.addEventListener('pageshow',checkReviewExpiry);
+document.addEventListener('visibilitychange',()=>{if (!document.hidden) checkReviewExpiry();});
 window.addEventListener('pagehide',saveState);
 renderMission();
 saveState();
