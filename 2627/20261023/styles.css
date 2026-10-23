@@ -294,6 +294,7 @@ textarea { display: block; width: 100%; resize: vertical; }
 .measurement-track i { display: block; height: 100%; min-width: 2px; border-radius: inherit; background: #9ebc65; }
 .measurement-row:nth-of-type(even) .measurement-track i { background: #b9a6d0; }
 .measurement-number { text-align: right; font-family: var(--mono); font-size: 9px; }
+.measurements p { margin: 4px 0 0; font-size: 12px; line-height: 1.45; color: #5e7350; }
 .workspace-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 18px; margin-top: 34px; padding: 21px 0 23px; border-top: 1px solid var(--line); color: #86917c; font-size: 9px; }
 .workspace-footer .inline-button { margin-left: auto; font-size: 9px; color: #77886a; font-weight: 500; }
 .footer-code { font-family: var(--mono); font-size: 8px; letter-spacing: .08em; }

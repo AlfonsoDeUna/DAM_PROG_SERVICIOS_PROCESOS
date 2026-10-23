@@ -30,7 +30,7 @@ export const missions = [
       "Guárdalo y ejecuta el comando en la terminal, dentro de esa carpeta.",
       "Pega la salida del programa en la prueba inicial. Después realiza el experimento."
     ],
-    "code": "def suma_cuadrados(numero):\n    # Esta variable pertenece a esta llamada de la función.\n    total = 0\n\n    # El extremo final de range no se incluye: +1 permite llegar a numero.\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n\n    # Devolvemos el resultado para que quien nos llamó pueda utilizarlo.\n    return total\n\n\nif __name__ == \"__main__\":\n    resultado = suma_cuadrados(5)\n    print(resultado)\n",
+    "code": "def suma_cuadrados(numero):\n    # Esta variable pertenece a esta llamada de la función.\n    total = 0\n\n    # El extremo final de range no se incluye: +1 permite llegar a numero.\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n\n    # Devolvemos el resultado para que quien nos llamó pueda utilizarlo.\n    return total\n\n\n# Este bloque solo se ejecuta cuando lanzas el archivo desde la terminal.\n# Ahora es opcional, pero con Pool será obligatorio (lo verás en la misión 4).\nif __name__ == \"__main__\":\n    resultado = suma_cuadrados(5)\n    print(resultado)\n",
     "fileName": "01_funcion.py",
     "command": "python 01_funcion.py",
     "trials": [
@@ -100,7 +100,7 @@ export const missions = [
       },
       {
         "term": "Secuencial",
-        "text": "La llamada de una vuelta termina antes de que empiece la siguiente."
+        "text": "Cada llamada termina antes de que empiece la siguiente. Un único proceso hace todo el trabajo, en el orden de la lista."
       },
       {
         "term": "append",
@@ -274,6 +274,8 @@ export const missions = [
         "Tiempo secuencial: <duración> segundos"
       ],
       "tips": [
+        "Para crear una lista con un mismo valor repetido puedes multiplicar una lista: [7] * 3 produce [7, 7, 7].",
+        "Un millón de vueltas por tarea es trabajo real: según el equipo, la ejecución puede tardar varios segundos. Espera a que aparezcan las tres líneas.",
         "Puedes consultar la documentación de time.perf_counter para recordar qué devuelve.",
         "Piensa qué instrucciones forman el trabajo que quieres medir antes de colocar el reloj.",
         "Muestra suficientes decimales para distinguir duraciones breves. El comprobador no exige un tiempo concreto."
@@ -364,7 +366,7 @@ export const missions = [
     },
     "hints": [
       "En pool.map(suma_cuadrados, datos), la función se pasa sin paréntesis.",
-      "Comprueba que el Pool está dentro de la protección __main__ y ejecuta el .py completo.",
+      "Comprueba que el Pool está dentro de la protección __main__ y ejecuta el .py completo desde la terminal. En Windows y macOS cada trabajador importa tu archivo al arrancar: sin esa protección intentaría crear su propio Pool y Python muestra un RuntimeError.",
       "No añadas start() a cada tarea. Pool administra los trabajadores; map recoge sus respuestas."
     ],
     "takeaway": "Pool reparte llamadas completas. Para tener varias tareas, necesitas varios datos que procesar.",
@@ -437,7 +439,7 @@ export const missions = [
       },
       {
         "term": "Trabajadores reutilizados",
-        "text": "Un mismo PID puede aparecer en varias tareas. chunksize=1 facilita observar el reparto dato a dato."
+        "text": "Un mismo PID puede aparecer en varias tareas. Si no indicas chunksize, map agrupa los datos en lotes de tamaño automático; chunksize=1 entrega los datos de uno en uno y facilita observar el reparto."
       }
     ],
     "walkthrough": [
@@ -535,7 +537,7 @@ export const missions = [
       },
       {
         "term": "El factor",
-        "text": "Tiempo secuencial dividido entre tiempo con Pool: mayor que 1 favorece al Pool; menor que 1 favorece al secuencial."
+        "text": "Tiempo secuencial dividido entre tiempo con Pool: mayor que 1 favorece al Pool; menor que 1 favorece al secuencial. Con dos trabajadores, el máximo teórico ronda 2, y solo si tu equipo tiene al menos dos núcleos libres: el programa muestra cuántos tiene."
       }
     ],
     "walkthrough": [
@@ -543,7 +545,7 @@ export const missions = [
       "Ejecuta el archivo y pega todas las líneas, incluidas la igualdad y las dos duraciones.",
       "Reduce el tamaño de cada tarea a 100 y compara qué ocurre con el coste del Pool."
     ],
-    "code": "from multiprocessing import Pool\nfrom time import perf_counter\n\n\ndef suma_cuadrados(numero):\n    # Aquí no usamos print ni sleep: queremos medir el trabajo de cálculo.\n    total = 0\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n    return total\n\n\nif __name__ == \"__main__\":\n    # Cambia una variable cada vez para poder interpretar el experimento.\n    datos = [1_000_000] * 8\n    procesos = 2\n\n    # Primera medición: un proceso hace todas las tareas una tras otra.\n    inicio = perf_counter()\n    secuencial = []\n    for numero in datos:\n        secuencial.append(suma_cuadrados(numero))\n    tiempo_secuencial = perf_counter() - inicio\n\n    # Segunda medición: los mismos datos y la misma función con Pool.\n    # Empezamos a medir ANTES de crear los procesos.\n    inicio = perf_counter()\n    with Pool(processes=procesos) as pool:\n        paralelo = pool.map(suma_cuadrados, datos)\n    # Paramos DESPUÉS de salir del bloque with.\n    tiempo_pool = perf_counter() - inicio\n\n    print(\"Número de tareas:\", len(datos))\n    print(\"Procesos trabajadores:\", procesos)\n    print(\"Resultados iguales:\", secuencial == paralelo)\n    print(\"Primer resultado:\", paralelo[0])\n    print(f\"Tiempo secuencial: {tiempo_secuencial:.4f} segundos\")\n    print(f\"Tiempo con Pool: {tiempo_pool:.4f} segundos\")\n\n    # >1: Pool fue más rápido; <1: la versión secuencial fue más rápida.\n    factor = tiempo_secuencial / tiempo_pool\n    print(f\"Factor secuencial/Pool: {factor:.2f}\")\n",
+    "code": "import os\nfrom multiprocessing import Pool\nfrom time import perf_counter\n\n\ndef suma_cuadrados(numero):\n    # Aquí no usamos print ni sleep: queremos medir el trabajo de cálculo.\n    total = 0\n    for valor in range(1, numero + 1):\n        total = total + valor * valor\n    return total\n\n\nif __name__ == \"__main__\":\n    # Cambia una variable cada vez para poder interpretar el experimento.\n    datos = [1_000_000] * 8\n    procesos = 2\n\n    # Primera medición: un proceso hace todas las tareas una tras otra.\n    inicio = perf_counter()\n    secuencial = []\n    for numero in datos:\n        secuencial.append(suma_cuadrados(numero))\n    tiempo_secuencial = perf_counter() - inicio\n\n    # Segunda medición: los mismos datos y la misma función con Pool.\n    # Empezamos a medir ANTES de crear los procesos.\n    inicio = perf_counter()\n    with Pool(processes=procesos) as pool:\n        paralelo = pool.map(suma_cuadrados, datos)\n    # Paramos DESPUÉS de salir del bloque with.\n    tiempo_pool = perf_counter() - inicio\n\n    print(\"Número de tareas:\", len(datos))\n    print(\"Procesos trabajadores:\", procesos)\n    # Núcleos lógicos que ve el sistema operativo: limitan cuánto puede mejorar Pool.\n    print(\"Núcleos lógicos del equipo:\", os.cpu_count())\n    print(\"Resultados iguales:\", secuencial == paralelo)\n    print(\"Primer resultado:\", paralelo[0])\n    # Seis decimales: las tareas pequeñas tardan microsegundos.\n    print(f\"Tiempo secuencial: {tiempo_secuencial:.6f} segundos\")\n    print(f\"Tiempo con Pool: {tiempo_pool:.6f} segundos\")\n\n    # >1: Pool fue más rápido; <1: la versión secuencial fue más rápida.\n    factor = tiempo_secuencial / tiempo_pool\n    print(f\"Factor secuencial/Pool: {factor:.4f}\")\n",
     "fileName": "06_comparar.py",
     "command": "python 06_comparar.py",
     "trials": [
@@ -572,7 +574,7 @@ export const missions = [
           "workers": 2,
           "first": "338350"
         },
-        "hint": "Un tiempo mostrado como 0.0000 puede deberse al redondeo de una tarea muy breve. Mantén todas las líneas de salida.",
+        "hint": "Con tareas tan pequeñas, el tiempo secuencial puede ser de microsegundos (por ejemplo, 0.000030 segundos). Por eso el programa muestra seis decimales. Mantén todas las líneas de salida.",
         "success": "Experimento registrado. Comprueba si organizar los trabajadores compensa ahora que cada tarea es pequeña."
       }
     ],
@@ -594,7 +596,7 @@ export const missions = [
     "hints": [
       "Comprueba primero «Resultados iguales: True». Después interpreta las duraciones.",
       "La cantidad de trabajo y el número de procesos son variables distintas. Cambia una cada vez.",
-      "Repite cada configuración tres veces. Un factor 0.50 significa que Pool tardó aproximadamente el doble; 2.00, que tardó la mitad."
+      "Repite cada configuración tres veces. Un factor 2.00 significa que Pool tardó la mitad; 0.50, que tardó el doble; 0.0010, que tardó unas mil veces más."
     ],
     "takeaway": "La mejora se mide: más procesos no garantizan menos tiempo para cualquier trabajo.",
     "predictionPrompt": "Al hacer las ocho tareas mucho más pequeñas, ¿crees que se mantendrá la ventaja de repartirlas? Razona qué costes siguen existiendo.",
@@ -621,7 +623,7 @@ export const missions = [
       },
       {
         "term": "starmap",
-        "text": "Desempaqueta cada pareja de la lista como los argumentos de una llamada y reúne sus resultados."
+        "text": "Desempaqueta cada pareja como los argumentos de una llamada y reúne los resultados en orden. Con map, la función recibiría la tupla entera como un solo argumento y Python mostraría un TypeError por faltar b."
       }
     ],
     "walkthrough": [
@@ -685,7 +687,7 @@ export const missions = [
     "hints": [
       "Cuenta los parámetros de la función y los elementos de cada pareja.",
       "En esta misión usamos starmap, porque necesitamos pasar los dos elementos como argumentos separados.",
-      "No inviertas los números dentro de cada pareja para probar el orden. Invierte el orden de la lista de parejas."
+      "La cuarta pareja origina una cuarta llamada, multiplicar(8, 9). No hace falta cambiar el número de trabajadores: uno de los dos atenderá esa llamada cuando quede libre."
     ],
     "takeaway": "Con starmap, una pareja de datos se convierte en los argumentos de una llamada.",
     "predictionPrompt": "Al añadir una pareja a la entrada, ¿cuántas llamadas habrá y cuántos argumentos recibirá cada una? ¿Necesitas crear otro trabajador?",
@@ -776,7 +778,7 @@ export const missions = [
     },
     "hints": [
       "El nombre suma_cubos es una etiqueta. La operación del bucle decide qué se calcula.",
-      "Un cubo multiplica el valor por sí mismo tres veces. Mantén el acumulador y el return.",
+      "Un cubo es el producto de tres factores iguales: valor * valor * valor, o valor ** 3. Mantén el acumulador y el return.",
       "Comprueba a mano el caso de entrada 2: debes sumar el cubo de 1 y el cubo de 2. Usa ese caso para revisar la operación del bucle antes de ampliar los datos."
     ],
     "takeaway": "Puedes cambiar el cálculo manteniendo el reparto. Comprobar resultados forma parte de programar.",

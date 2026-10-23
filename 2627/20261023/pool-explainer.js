@@ -1,7 +1,10 @@
 // Modelo didáctico de Pool.map. No ejecuta Python ni mide rendimiento real.
-const INPUTS = Object.freeze([3, 5, 10, 2, 4, 6]);
-const VALUES = Object.freeze([14, 55, 385, 5, 30, 91]);
-const DURATIONS = Object.freeze([3, 1, 2, 1, 3, 1]);
+// Las duraciones crecen con el dato (más vueltas, más trabajo), así que las
+// llamadas terminan en un orden distinto al de la entrada.
+const INPUTS = Object.freeze([10, 3, 5, 2, 8, 4]);
+const VALUES = Object.freeze([385, 14, 55, 5, 204, 30]);
+const DURATIONS = Object.freeze([4, 1, 2, 1, 3, 2]);
+const pasos = n => `${n} ${n === 1 ? 'paso' : 'pasos'}`;
 
 export function createPoolModel({workers = 2, tasks = 6} = {}) {
   if (![1, 2, 4].includes(workers) || ![1, 6].includes(tasks)) throw new Error('Configuración no admitida por este modelo.');
@@ -56,7 +59,7 @@ export function stepPoolModel(state) {
   }
   if (next.results.every(result => result !== null)) {
     next.status = 'done';
-    next.events.push(`Todas las llamadas han terminado. Ahora map devuelve la lista completa: [${next.results.join(', ')}].`);
+    next.events.push(`Todas las llamadas han terminado en ${pasos(next.steps)} con ${next.workers} ${next.workers === 1 ? 'trabajador' : 'trabajadores'}. Ahora map devuelve la lista completa: [${next.results.join(', ')}].`);
   } else {
     distribute(next);
     if (next.events.length === 0) next.events.push('Las llamadas en curso siguen trabajando. map todavía espera: quedan resultados por reunir.');
@@ -74,7 +77,7 @@ export function mountPoolExplainer(container, {onComplete} = {}) {
   let disposed = false;
 
   container.innerHTML = `<section class="pool-model" aria-labelledby="${prefix}-title">
-    <header class="pool-model__header"><span class="pool-model__eyebrow">OBSERVA EL REPARTO</span><h3 id="${prefix}-title">Una tarea entera. Un trabajador disponible.</h3><p>El proceso principal entrega llamadas al equipo. Recorre el modelo paso a paso y observa quién trabaja, quién espera y dónde queda cada respuesta.</p><p class="pool-model__small">Modelo didáctico · <code>chunksize=1</code> · duraciones inventadas. No ejecuta Python.</p></header>
+    <header class="pool-model__header"><span class="pool-model__eyebrow">OBSERVA EL REPARTO</span><h3 id="${prefix}-title">Muchas llamadas, un equipo pequeño.</h3><p>El proceso principal entrega llamadas al equipo. Recorre el modelo paso a paso y observa quién trabaja, quién espera y dónde queda cada respuesta.</p><p class="pool-model__small">Modelo didáctico · <code>chunksize=1</code> · duraciones simuladas, mayores cuanto mayor es el dato. No ejecuta Python.</p></header>
     <div class="pool-model__controls">
       <label for="${prefix}-workers">Trabajadores<select id="${prefix}-workers" data-model="workers"><option value="1">1 trabajador</option><option value="2" selected>2 trabajadores</option><option value="4">4 trabajadores</option></select></label>
       <label for="${prefix}-tasks">Llamadas independientes<select id="${prefix}-tasks" data-model="tasks"><option value="1">1 tarea</option><option value="6" selected>6 tareas</option></select></label>
@@ -86,8 +89,8 @@ export function mountPoolExplainer(container, {onComplete} = {}) {
     <div class="pool-model__stage"><h4>3. Resultados en el orden de entrada</h4><div class="pool-model__results" data-model="results"></div><p class="pool-model__return" data-model="return-state"></p></div>
     <div class="pool-model__finishes"><strong>Orden de finalización</strong><div data-model="finishes"></div></div>
     <div class="pool-model__explanation" role="status" aria-live="polite" aria-atomic="true" data-model="events"></div>
-    <details class="pool-model__note"><summary>Qué representa este modelo</summary><p>Es una simulación didáctica: no ejecuta Python. Los pasos y las duraciones son inventados, no segundos ni una predicción de velocidad. Representa un reparto con <code>chunksize=1</code>; Python también puede agrupar llamadas en lotes. Si varias tareas terminan en el mismo paso, aquí se enumeran por trabajador.</p><p>Un trabajador es un proceso, no un núcleo reservado. La aceleración real depende del trabajo, del equipo y del coste de crear procesos y comunicar datos.</p></details>
-    <p class="pool-model__challenge"><strong>Compruébalo:</strong> prueba 4 trabajadores con 1 tarea. Después reinicia con 6 tareas. ¿Qué cambia y qué se mantiene?</p>
+    <details class="pool-model__note"><summary>Qué representa este modelo</summary><p>Es una simulación didáctica: no ejecuta Python. Los pasos son unidades simuladas, no segundos: un dato mayor ocupa más pasos porque su bucle da más vueltas, pero no es una predicción de velocidad. Representa un reparto con <code>chunksize=1</code>; Python también puede agrupar llamadas en lotes. Si varias tareas terminan en el mismo paso, aquí se enumeran por trabajador.</p><p>Un trabajador es un proceso, no un núcleo reservado. La aceleración real depende del trabajo, del equipo y del coste de crear procesos y comunicar datos.</p></details>
+    <p class="pool-model__challenge"><strong>Compruébalo:</strong> prueba 4 trabajadores con 1 tarea. Después reinicia con 6 tareas y compara 1, 2 y 4 trabajadores: ¿cuántos pasos necesita cada configuración? ¿Por qué 4 trabajadores no tardan la cuarta parte que 1? Fíjate en la llamada más larga.</p>
   </section>`;
 
   const root = container.querySelector('.pool-model');
@@ -104,7 +107,7 @@ export function mountPoolExplainer(container, {onComplete} = {}) {
     action('step').disabled = !running;
     find('step-count').textContent = `Paso ${state.steps} · unidades simuladas`;
     find('finished-count').textContent = `${state.completionOrder.length} de ${state.taskCount} terminadas`;
-    find('queue').innerHTML = state.queue.length ? state.queue.map(i => `<span class="pool-model__task"><b>${taskLabel(i)}</b><code>f(${INPUTS[i]})</code><small>${DURATIONS[i]} pasos</small></span>`).join('') : '<p class="pool-model__empty">La cola está vacía.</p>';
+    find('queue').innerHTML = state.queue.length ? state.queue.map(i => `<span class="pool-model__task"><b>${taskLabel(i)}</b><code>f(${INPUTS[i]})</code><small>${pasos(DURATIONS[i])}</small></span>`).join('') : '<p class="pool-model__empty">La cola está vacía.</p>';
     find('slots').innerHTML = state.slots.map(slot => {
       const busy = slot.task !== null;
       const percent = busy ? ((DURATIONS[slot.task] - slot.remaining) / DURATIONS[slot.task]) * 100 : 0;

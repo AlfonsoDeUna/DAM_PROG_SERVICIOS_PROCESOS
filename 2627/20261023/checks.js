@@ -213,11 +213,11 @@ function checkBenchmark(check, text) {
   if (first !== integer(check.first)) return fail("Revisa el tamaño de cada tarea", "El primer resultado indica un cálculo diferente al pedido. Comprueba el número de la lista datos.");
   const rounded = sequential === 0 || pool === 0 || factor === 0;
   const interpretation = rounded
-    ? "Alguna medida se ha redondeado a cero; aumenta los decimales si necesitas interpretarla con más detalle."
+    ? "Alguna medida se ha redondeado a cero; muestra más decimales (el programa de partida usa seis) para poder interpretarla."
     : factor > 1
       ? "En esta ejecución, el Pool ha empleado menos tiempo."
       : factor < 1
-        ? "En esta ejecución, el Pool ha empleado más tiempo; es un resultado válido."
+        ? `En esta ejecución, el Pool ha empleado más tiempo${factor < 0.5 ? ` (unas ${Math.round(pool / sequential).toLocaleString("es-ES")} veces el tiempo secuencial)` : ""}; es un resultado válido.`
         : "El factor mostrado es aproximadamente uno: las duraciones son parecidas.";
   return pass(`Los resultados coinciden y la configuración encaja. ${interpretation}`, { sequential, pool, factor, workers: Number(workers), count: Number(count) });
 }

@@ -83,6 +83,7 @@ Las salidas pegadas no demuestran por sí solas la autoría ni la comprensión. 
 - Suponer que cada trabajador es un núcleo reservado o que hace exactamente una tarea.
 - Interpretar los mensajes de terminal como si tuvieran que aparecer en el mismo orden que la lista final.
 - Dar por hecho que más procesos siempre reducen el tiempo o que un Pool más lento está mal programado.
+- Esperar que N trabajadores dividan el tiempo entre N: la llamada más larga (se ve en el simulador de la misión 4) y los núcleos del equipo (la misión 6 los muestra con `os.cpu_count()`) ponen el límite.
 - Considerar suficiente que dos listas coincidan cuando ambas usan la misma función equivocada.
 
 ## Tres preguntas para una defensa breve

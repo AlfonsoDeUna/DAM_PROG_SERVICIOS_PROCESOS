@@ -173,7 +173,7 @@ function renderMeasurements(verdict) {
   if (!metrics || metrics.pool == null) { el.hidden = true; el.replaceChildren(); return; }
   el.hidden = false;
   const max = Math.max(metrics.sequential, metrics.pool, 0.0001);
-  const format = n => Number(n).toLocaleString('es-ES', {maximumFractionDigits: 4}) + ' s';
+  const format = n => Number(n).toLocaleString('es-ES', n > 0 && n < 0.01 ? {maximumSignificantDigits: 3} : {maximumFractionDigits: 4}) + ' s';
   el.innerHTML = `<span class="eyebrow">TUS MEDIDAS</span>${[['Secuencial',metrics.sequential],['Con Pool',metrics.pool]].map(([label,n]) => `<div class="measurement-row"><span>${label}</span><div class="measurement-track"><i style="width:${Math.max(n === 0 ? 0 : 2, n / max * 100)}%"></i></div><strong class="measurement-number">${format(n)}</strong></div>`).join('')}<p>${metrics.sequential === 0 || metrics.pool === 0 ? 'Hay tiempos redondeados a cero. Más decimales te darán una comparación más precisa.' : metrics.pool < metrics.sequential ? 'En esta ejecución, Pool ha empleado menos tiempo.' : metrics.pool > metrics.sequential ? 'En esta ejecución, el trabajo secuencial ha empleado menos tiempo. También es un resultado válido.' : 'Los tiempos mostrados coinciden en esta ejecución.'}</p>`;
 }
 function renderReflection() {
