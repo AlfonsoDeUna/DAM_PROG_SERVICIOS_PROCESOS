@@ -16,6 +16,49 @@ Utiliza `import threading`. Añade `import time` o `import random` cuando el eje
 
 Para recoger resultados, puedes utilizar listas compartidas: cada hilo escribe en su propia lista o en una posición asignada. Consulta los resultados después de esperar la finalización de los hilos.
 
+## Ejercicios de iniciación
+
+Estos dos ejercicios son para practicar los conceptos básicos antes de los diez siguientes.
+
+### A. Dos contadores al mismo tiempo
+
+Crea una función `contar(nombre)` que muestre el nombre recibido y los números del 1 al 3, esperando un segundo entre cada número.
+
+Crea **dos hilos** que ejecuten esa función, uno con el nombre `"A"` y otro con `"B"`. Inicia ambos y espera a que terminen. Solo entonces muestra `"Los dos contadores han terminado"`.
+
+**Ayuda de Python**
+
+| Operación | Utilidad o ejemplo |
+|---|---|
+| `for numero in range(1, 4):` | Recorre los números `1`, `2` y `3`. |
+| `time.sleep(1)` | Espera un segundo. |
+| `args=("A",)` | Pasa el nombre `"A"` a la función del hilo. |
+| `hilo.join()` | Espera a que ese hilo termine. |
+
+**Recuerda:** llama a `start()` en los dos hilos **antes** de llamar a `join()`. Observa cómo se mezclan sus mensajes.
+
+### B. Sumar una lista con dos hilos
+
+Dispones de la lista `numeros = [2, 4, 6, 8, 10, 12]`. Divide sus elementos en dos grupos de tres números. Crea dos hilos: cada hilo calculará la suma de uno de los grupos y guardará su resultado en una **posición distinta** de una lista llamada `resultados`.
+
+Cuando ambos terminen, muestra las dos sumas parciales y la suma total.
+
+**Ayuda de Python**
+
+| Operación | Utilidad o ejemplo |
+|---|---|
+| `numeros[:3]` | Obtiene los tres primeros números: `[2, 4, 6]`. |
+| `numeros[3:]` | Obtiene los tres últimos: `[8, 10, 12]`. |
+| `sum([2, 4, 6])` | Calcula la suma de una lista: `12`. |
+| `resultados = [0, 0]` | Prepara una posición para cada hilo. |
+| `resultados[0] = total` | Guarda el resultado de un hilo en su posición. |
+
+**Recuerda:** la función de cada hilo puede recibir el grupo de números, la lista `resultados` y la posición que debe utilizar mediante `args`. Espera a los dos hilos antes de calcular el total.
+
+---
+
+**Ejercicios de aplicación**
+
 ## 1. Recuento de votos
 
 Dispones de una lista con votos a "Equipo A", "Equipo B" y "Equipo C". Divide la lista en dos partes y encarga cada parte a un hilo. Cada hilo debe guardar su recuento por separado. Cuando ambos terminen, combina los resultados y muestra el ganador o indica si hay empate.
