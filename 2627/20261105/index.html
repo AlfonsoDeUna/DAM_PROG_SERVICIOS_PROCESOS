@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Presentación para una clase guiada de Programación Orientada a Objetos en Python: clases, herencia, atributos, constructores, objetos, métodos y actividades." name="description"/>
+<title>POO en Python · Clase guiada</title>
+<style>
+:root { --ink:#182235; --muted:#64748b; --line:#e2e8f0; --accent:#1f5fb3; --accent-light:#f2f7ff; --soft:#f8fafc; --good:#22765d; }
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; width:100%; height:100%; overflow:hidden; font-family:Arial,"Helvetica Neue",Helvetica,sans-serif; background:#fff; color:var(--ink); }
+button { font-family:inherit; }
+code,pre { font-family:Consolas,"Liberation Mono",Menlo,monospace; }
+#stage { position:absolute; left:50%; top:50%; width:1280px; height:720px; transform:translate(-50%,-50%) scale(var(--scale,1)); transform-origin:center center; overflow:hidden; background:white; box-shadow:0 0 1px #ddd; }
+.slide { position:absolute; inset:0; display:none; padding:36px 70px 67px; background:#fff; overflow:hidden; }
+.slide.active { display:flex; flex-direction:column; }
+.slide-header { flex:0 0 auto; }
+.chapter-row { display:flex; align-items:center; gap:14px; min-height:29px; }
+.chapter-badge { font-weight:700; font-size:14px; letter-spacing:.03em; color:#1d4f8a; padding:5px 10px; background:#f0f6ff; border-radius:6px; }
+.course-name {font-size:13px; font-weight:700; letter-spacing:.11em; color:var(--muted);}
+h1 { font-size:39px; line-height:1.15; font-weight:650; letter-spacing:-.8px; margin:13px 0 6px; }
+.slide-phase { color:var(--accent); font-size:20px; font-weight:650; margin:0 0 20px; padding:0 0 12px; border-bottom:2px solid #e8eef8; }
+.slide-content { flex:1 1 auto; min-height:0; width:100%; display:flex; flex-direction:column; gap:16px; justify-content:flex-start; overflow:hidden; }
+.slide-footer { display:none; position:absolute; bottom:25px; left:70px; right:70px; align-items:center; justify-content:space-between; font-size:12px; color:#8a95a8; border-top:1px solid #edf1f7; padding-top:11px; letter-spacing:.07em; }
+.slide-footer__right { color:var(--ink); font-size:14px; font-weight:700; letter-spacing:0; }
+.lead { font-size:24px; line-height:1.35; font-weight:400; margin:0; }
+.lead strong,.lead code { font-weight:700; }
+.lead code,.task-heading code { color:#184f94; }
+.mini-label,.muted-kicker { letter-spacing:.1em; color:var(--muted); text-transform:uppercase; font-size:13px; font-weight:700; margin-bottom:12px; }
+.two-cols { display:grid; grid-template-columns:1fr 1fr; gap:20px; align-items:start; }
+.two-cols.align-center { align-items:center; }
+.two-cols > div {min-width:0;}
+.info-card,.small-card { border:1px solid var(--line); background:var(--soft); border-radius:12px; padding:22px 25px; font-size:21px; line-height:1.45; }
+.info-card p {margin:0 0 11px;} .info-card p:last-child {margin-bottom:0;}
+.focus-card {background:#f5f9ff; border-color:#dce9fc;}
+.note-card { background:#f8fbff; border-left:5px solid #7ca8df; padding:14px 18px; font-size:18px; }
+.hint-card {background:#f8fbff; border-left:5px solid #7ca8df; padding:12px 18px; font-size:18px;}
+.big-concept { font-family:Consolas,monospace; font-size:30px; color:#1d4f8a; font-weight:700; margin-bottom:13px; }
+.big-concept.small {font-size:28px;}
+.card-sub {font-size:19px; line-height:1.45; color:#4b5c71;}
+.clean-list {list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px;}
+.clean-list li {padding-left:19px; position:relative;}
+.clean-list li:before {content:'•'; position:absolute; left:0; color:#3471bd; font-weight:700;}
+.compact-list {gap:7px;}
+.small-card {height:100%; background:#fff; padding:24px 27px;}
+.small-card__title {color:#1f5fb3; font-size:21px; font-weight:700; margin-bottom:15px;}
+.property {display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid #e8eef5; font-family:Consolas,monospace; font-size:20px;}
+.property span {font-family:Arial,sans-serif;color:#677487;}
+.code-frame { border:1px solid #dce4ee; border-radius:12px; overflow:hidden; background:#f8fafc; flex:0 0 auto; }
+.code-frame__bar {height:33px; background:#f1f5f9; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:6px; padding:0 15px;}
+.code-dot {width:8px; height:8px; border-radius:50%; background:#bdc9d8;}
+.code-name {font-size:12px; font-family:Arial,sans-serif; color:#64748b; margin-left:auto; letter-spacing:.07em;}
+pre {white-space:pre; font-size:23px; line-height:1.49; margin:0; tab-size:4; overflow:visible; }
+.code-frame pre {padding:17px 24px; color:#182335;}
+.code-frame--compact pre {font-size:18px; line-height:1.22; padding:10px 20px;}
+.code-frame .k,.code-frame .kn {color:#205aab; font-weight:700;}
+.code-frame .nc,.code-frame .nf {color:#00648f;}
+.code-frame .s,.code-frame .s2,.code-frame .sa,.code-frame .si {color:#8f4d24;}
+.code-frame .c1 {color:#64748b; font-style:italic;}
+.code-frame .mi {color:#6a47a1;}
+.code-frame .bp {color:#145a7a; font-weight:700;}
+.output-card {border:1px solid #d7e8df; border-radius:12px; background:#fbfdfb; overflow:hidden; padding:14px 18px; min-width:0;}
+.output-card pre {font-size:20px; line-height:1.4; white-space:pre-wrap;}
+.output-label {font-size:13px; font-weight:700; color:#22765d; letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px;}
+.question-block {margin:18px 0 0;}
+.talk-tag {font-size:14px; font-weight:700; color:var(--accent); letter-spacing:.13em;}
+.question-text {font-size:35px; line-height:1.28; font-weight:650; max-width:1080px; margin:18px 0; letter-spacing:-.4px;}
+.question-text code { color:#195390; font-weight:650;}
+.guided-prompt {font-size:21px; color:#627087; line-height:1.4; margin:12px 0 4px;}
+.task-heading { display:flex; align-items:flex-start; gap:14px; font-size:22px; line-height:1.35; }
+.task-num {flex:0 0 auto; background:#eaf2ff; color:#225eaa; border-radius:6px; font-size:13px; font-weight:700; letter-spacing:.08em; padding:7px 11px; white-space:nowrap; margin-top:2px;}
+.task-heading p {margin:0;}
+.guide-card {padding:18px 24px;}
+.steps {margin:0; padding:0 0 0 32px; font-size:21px; line-height:1.42;}
+.steps li {padding:0 0 8px 8px;}
+.steps li:last-child {padding-bottom:0;}
+.steps li::marker {font-weight:700; color:#195da8;}
+.reveal-wrap { width:100%; min-height:0; }
+.reveal-btn {font-size:17px; font-weight:700; color:#1e578f; padding:12px 18px; border:1px solid #b9d4ef; border-radius:8px; background:#f5faff; cursor:pointer; display:inline-flex; gap:20px; align-items:center;}
+.reveal-btn:hover {background:#eaf3ff;}
+.reveal-btn:focus-visible {outline:3px solid #7aa4e6; outline-offset:3px;}
+.reveal-btn span {font-size:23px; line-height:15px;}
+.reveal-content {margin-top:12px; padding:14px 18px; background:#fbfdfd; border:1px solid #dce8ef; border-radius:10px; font-size:19px; line-height:1.38;}
+.reveal-content[hidden] {display:none;}
+.reveal-close {display:none;position:absolute;right:14px;top:12px;border:1px solid #d6e1ec;border-radius:6px;font-size:21px;color:#52647b;background:white;width:33px;height:32px;cursor:pointer;}
+.check-slide .reveal-content, .ticket-slide .reveal-content {position:absolute;left:70px;right:70px;top:181px;bottom:61px;margin:0;z-index:30;overflow:auto;background:#fff;padding:20px 24px;border:2px solid #c8ddef;box-shadow:0 10px 40px rgba(37,68,100,.14);}
+.check-slide .reveal-close, .ticket-slide .reveal-close {display:block;}
+.reveal-content__title {font-weight:700; font-size:17px; color:#195b8a; margin-bottom:8px;}
+.reveal-content p {margin:0;}
+.reveal-content .code-frame pre {font-size:20px; line-height:1.25; padding:8px 16px;}
+.reveal-content .code-frame__bar {height:25px;}
+.reveal-content .why {margin-top:8px; font-size:18px;}
+.reveal-content .output-card {padding:9px 14px; margin-top:10px;}
+.reveal-content .output-card pre {font-size:18px;}
+.reveal-content .output-label {margin-bottom:5px;}
+.inherit-diagram {padding:4px 40px; display:flex; align-items:center; flex-direction:column;}
+.diagram-node {border:2px solid #99bce1; background:#f3f8ff; color:#174e94; border-radius:10px; padding:14px 48px; font-size:26px; font-weight:700; min-width:240px; text-align:center;}
+.diagram-node small {display:block; font-weight:400; font-size:14px; margin-top:3px; color:#60778d;}
+.child-node {border-color:#9dcbb6; background:#f4fcf8; color:#1c694b;}
+.diagram-connector {font-size:27px; color:#65788d; line-height:1.1; text-align:center;}
+.diagram-connector span {display:block; font-size:14px; color:#738299;}
+.transfer {display:flex; align-items:center; gap:13px; font-size:18px;}
+.transfer>div {background:#fff; border:1px solid #dce7f4; border-radius:8px; padding:12px 8px; flex:1; text-align:center;}
+.transfer strong {display:block; white-space:nowrap; color:#144d91; font-family:Consolas,monospace;}
+.transfer small {display:block; font-size:12px; margin-top:3px; color:#708095;}
+.transfer>b {color:#1c619e; font-size:27px;}
+.object-diagram {max-width:950px; margin:9px auto; width:100%;}
+.template-box {background:#f4f7fb; border:1px solid #bccddd; border-radius:10px; padding:18px; font-size:24px; font-weight:700; text-align:center;}
+.template-box span {display:block; font-size:18px; font-weight:400; color:#718096; padding-top:4px;}
+.branches {display:flex; justify-content:space-around; font-size:30px; color:#7891a8; padding:4px 0;}
+.object-boxes {display:grid; grid-template-columns:1fr 1fr; gap:25px;}
+.object-box {background:#fff; border:2px solid #d5e4f1; border-radius:10px; padding:20px 30px; font-size:19px;}
+.object-box b {display:block; color:#1e588f; font-size:23px; margin-bottom:10px;}
+.object-box span {display:block; margin:5px 0;}
+.method-example {display:flex; align-items:center; justify-content:center; gap:0; margin:45px auto 8px; font:700 46px Consolas,monospace;}
+.method-object {color:#1d4f8b; background:#edf4ff; padding:6px 12px; border-radius:7px;}
+.method-dot {color:#697789; padding:0 5px;}
+.method-name {color:#22745b; background:#eefbf5; padding:6px 9px; border-radius:7px;}
+.method-parentheses {color:#495b75; padding:0 6px;}
+.legend-row {display:flex;justify-content:center;gap:40px; color:#6e7b8b; font-size:17px; margin-bottom:23px;}
+.test-banner {background:#f0faf3; border:1px solid #c7e4d0; border-radius:10px; padding:18px 25px; color:#195c3a; font-size:23px;}
+.bottom-emphasis {margin-top:auto; color:#20568f; border-top:1px solid #e3eaf3; padding-top:15px; font-size:22px; font-weight:700;}
+.checklist {display:flex; flex-direction:column; gap:12px;}
+.checklist label {font-size:20px; padding:13px 15px; border:1px solid var(--line); border-radius:9px; display:flex; align-items:center; gap:12px; cursor:pointer; background:#fafcff;}
+.checklist input {width:23px; height:23px; accent-color:#1d67a3;}
+.exit-questions {display:flex; flex-direction:column; gap:14px;}
+.exit-questions>div {display:flex;align-items:center; gap:17px; padding:14px 18px; border:1px solid #dfe7ef; background:#fff; border-radius:10px; font-size:22px;}
+.exit-questions b {background:#eaf2ff; color:#195592; width:36px; height:36px; display:grid; place-items:center; border-radius:8px; flex-shrink:0;}
+.answer-list {margin:0; padding:0 0 0 25px; font-size:19px; line-height:1.4;}
+.cover .slide-header {border:0;}
+.cover .slide-phase {border:0;}
+.cover-main {margin:35px 0 0;}
+.cover-eyebrow {font-size:16px; font-weight:700; letter-spacing:.13em; color:var(--accent);}
+.cover-main h2 {font-size:45px; letter-spacing:-.8px; max-width:850px; line-height:1.15; font-weight:650; margin:22px 0;}
+.cover-main p {font-size:25px; color:#516076; max-width:900px; line-height:1.35;}
+.pill-row {display:flex; gap:10px; flex-wrap:wrap; margin-top:30px;}
+.pill-row span {padding:9px 14px; border:1px solid #dce7f2; border-radius:30px; background:#f8fbff; color:#24568e; font-family:Consolas,monospace; font-size:18px;}
+.cover-bottom {font-size:18px; color:#697789; margin-top:auto; padding-bottom:15px;}
+.closing {display:flex; flex-direction:column; align-items:center; text-align:center; margin:35px auto 0; gap:27px; width:100%;}
+.closing-label {letter-spacing:.1em; font-size:18px; color:#225e9b; font-weight:700;}
+.closing-flow {display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:12px;}
+.closing-flow span {background:#f1f6ff; border:1px solid #dfebf9; color:#245284; border-radius:8px; padding:14px 18px; font-size:18px; font-weight:700;}
+.closing-flow b {font-size:26px; color:#7790ac;}
+.closing p {font-size:27px; margin:0;}
+.small-end {font-size:19px; color:#66768a;}
+#controls {position:absolute; top:auto; bottom:0; width:100%; z-index:100; height:49px; display:flex; justify-content:center; align-items:center; pointer-events:none;}
+.controls-inner {pointer-events:auto; display:flex; background:#fff; border:1px solid #dce4ed; border-radius:10px 10px 0 0; padding:5px 10px 4px; gap:10px; box-shadow:0 -2px 12px rgba(0,0,0,.03);}
+.control-btn {cursor:pointer; border:0; background:#fff; color:#315573; font-size:14px; font-weight:700; padding:7px 12px; border-radius:6px; white-space:nowrap;}
+.control-btn:hover {background:#eef4ff;}
+.control-btn:focus-visible {outline:3px solid #9cc4ed; outline-offset:2px;}
+.control-btn:disabled {color:#a8b0be;cursor:default;background:#fff;}
+#current-slide {font-size:14px; color:#596c80; min-width:64px; text-align:center; align-self:center;}
+#progress-wrap {position:absolute; bottom:0; height:4px; width:100%; background:#ecf2f8; z-index:120;}
+#progress {height:4px; width:0; background:#2660a4; transition:width .17s ease;}
+#overlay {position:fixed; inset:0; background:rgba(15,23,42,.25); z-index:300; display:none; align-items:center; justify-content:center;}
+#overlay.open {display:flex;}
+.overlay-dialog {width:min(760px,90vw); max-height:min(85vh,750px); background:#fff; border-radius:14px; padding:26px 30px; overflow:auto; box-shadow:0 20px 45px rgba(0,0,0,.18);}
+.overlay-header {display:flex; align-items:center; justify-content:space-between;}
+.overlay-header h2 {font-size:27px; margin:0;}
+#close-overlay {border:1px solid #dae2eb; background:#fff; font-size:25px; cursor:pointer; width:35px; height:35px; border-radius:6px;}
+.overlay-sub {font-size:15px; color:#66768c; margin:12px 0 20px;}
+.chapter-option {width:100%; border:1px solid #e3e9f0; background:#fff; text-align:left; display:flex; align-items:center; gap:14px; padding:12px 16px; margin:6px 0; border-radius:8px; font-size:17px; cursor:pointer; color:var(--ink);}
+.chapter-option:hover {background:#f3f8ff;}
+.chapter-option span:first-child {background:#eaf1fc; color:#1f5c9c; font-size:15px; min-width:37px; padding:4px 6px; border-radius:6px; text-align:center; font-weight:700;}
+.chapter-option small {margin-left:auto; color:#7a899a;}
+.foothelp {font-size:14px; color:#7a8798; margin-top:20px;}
+@media (prefers-reduced-motion:reduce) { #progress {transition:none;} }
+@media print {
+  @page {size: 16in 9in; margin:0;}
+  html,body {width:auto; height:auto; overflow:visible; background:#fff;}
+  #stage {position:static; left:auto; top:auto; width:16in; height:auto; transform:none!important; box-shadow:none; overflow:visible;}
+  .slide {display:flex!important; position:relative; padding:36px 70px 67px; width:16in; height:9in; break-after:page; page-break-after:always;}
+  .slide-footer {bottom:25px;}
+  .reveal-content[hidden] {display:block;}
+  .reveal-btn,#controls,#progress-wrap,#overlay {display:none!important;}
+}
+</style>
+</head>
+<body>
+<main aria-label="Presentación: Programación Orientada a Objetos en Python" id="stage">
+<section aria-hidden="true" aria-label="Diapositiva 1: Programación orientada a objetos en Python, Clase guiada" class="slide cover" data-block="Inicio" id="slide-1">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">Inicio</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>Programación orientada a objetos en Python</h1>
+<div class="slide-phase">Clase guiada</div>
+</header>
+<div class="slide-content"><div class="cover-main"><div class="cover-eyebrow">APRENDEMOS CON EJEMPLOS Y PEQUEÑOS RETOS</div><h2>De la primera clase a los objetos y sus métodos</h2><p>Primero observamos. Después razonamos, completamos código y comprobamos.</p><div class="pill-row"><span>class</span><span>herencia</span><span>atributos</span><span>__init__</span><span>objetos</span><span>métodos</span></div></div><div class="cover-bottom">Clase guiada · trabajo individual · reto en papel y en Python</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">1 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 2: 1. Declaración de una clase, Explicación del profesor" class="slide" data-block="1" id="slide-2">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">1</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>1. Declaración de una clase</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Una <strong>clase</strong> es una plantilla que utilizamos para crear objetos.</p><div class="two-cols"><div><div class="info-card"><div class="mini-label">REGLAS DE DECLARACIÓN</div><ul class="clean-list"><li>Escribimos <code>class</code>.</li><li>Indicamos el nombre: <code>Profesor</code>.</li><li>Añadimos dos puntos: <code>:</code>.</li><li>El contenido de la clase va indentado.</li></ul></div></div><div><div class="info-card focus-card"><div class="big-concept">class Profesor:</div><p class="card-sub">Si aún no hay instrucciones, colocamos <code>pass</code> para dejar la clase vacía.</p></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">2 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 3: 1. Declaración de una clase, Ejemplo del profesor" class="slide" data-block="1" id="slide-3">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">1</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>1. Declaración de una clase</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Declaramos una clase <strong>Profesor</strong> sin atributos ni métodos por el momento.</p><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Profesor</span><span class="p">:</span>
+    <span class="k">pass</span></code></pre></div><div class="info-card note-card"><strong>Observa:</strong> <code>pass</code> no realiza ninguna acción. Permite que el bloque no esté vacío.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">3 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 4: 1. Declaración de una clase, Pregunta al alumnado" class="slide" data-block="1" id="slide-4">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">1</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>1. Declaración de una clase</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">¿Qué ocurrirá si borramos <code>pass</code> y dejamos la clase sin ninguna instrucción?</p><p class="guided-prompt">Primero responde sin ejecutar. Después, compruébalo en el intérprete de Python.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p>Python mostrará un <code>IndentationError</code>, porque después de <code>class Profesor:</code> espera un bloque de instrucciones indentado.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">4 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 5: 1. Declaración de una clase, Actividad" class="slide" data-block="1" id="slide-5">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">1</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>1. Declaración de una clase</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Completa la palabra reservada necesaria para declarar la clase <code>Profesor</code>.</p></div><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="n">_____</span> <span class="n">Profesor</span><span class="p">:</span>
+    <span class="k">pass</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> La palabra clave para definir una clase tiene cinco letras.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">5 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 6: 2. Herencia: extender una clase, Explicación del profesor" class="slide" data-block="2" id="slide-6">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">2</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>2. Herencia: extender una clase</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Una clase puede <strong>heredar</strong> de otra: reutilizar sus características y comportamientos.</p><div class="two-cols align-center"><div class="inherit-diagram"><div class="diagram-node parent-node">Vehiculo <small>clase padre</small></div><div class="diagram-connector">↓ <span>hereda de</span></div><div class="diagram-node child-node">Coche <small>clase hija</small></div></div><div><div class="info-card"><p>Un <strong>coche</strong> es un tipo de <strong>vehículo</strong>.</p><p>En Python indicamos la clase padre <strong>entre paréntesis</strong> después del nombre de la clase hija.</p></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">6 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 7: 2. Herencia: extender una clase, Ejemplo del profesor" class="slide" data-block="2" id="slide-7">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">2</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>2. Herencia: extender una clase</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead"><code>Coche</code> extiende a <code>Vehiculo</code>. Por ahora las dos clases están vacías.</p><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Vehiculo</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Coche</span><span class="p">(</span><span class="n">Vehiculo</span><span class="p">):</span>
+    <span class="k">pass</span></code></pre></div><div class="info-card note-card"><strong>Lee la segunda declaración:</strong> “Coche hereda de Vehiculo”.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">7 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 8: 2. Herencia: extender una clase, Pregunta al alumnado" class="slide" data-block="2" id="slide-8">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">2</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>2. Herencia: extender una clase</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">Si queremos una clase <code>Moto</code>, ¿qué clase debería aparecer entre paréntesis?</p><p class="guided-prompt">Explícalo como una relación “es un tipo de…”.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p><code>Moto(Vehiculo)</code>, porque una moto es un tipo de vehículo. En este ejemplo, la herencia se ve en la declaración; <code>Vehiculo</code> aún no aporta métodos ni datos porque contiene <code>pass</code>.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">8 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 9: 2. Herencia: extender una clase, Actividad" class="slide" data-block="2" id="slide-9">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">2</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>2. Herencia: extender una clase</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Completa la clase padre de <code>Moto</code>.</p></div><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Vehiculo</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Moto</span><span class="p">(</span><span class="n">________</span><span class="p">):</span>
+    <span class="k">pass</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> Utiliza exactamente el nombre de la clase que ya hemos definido arriba.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">9 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 10: 3. Declaración de atributos, Explicación del profesor" class="slide" data-block="3" id="slide-10">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">3</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>3. Declaración de atributos</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Los <strong>atributos</strong> son las características o los datos que describen a un objeto.</p><div class="two-cols"><div><div class="small-card"><div class="small-card__title">Alumno</div><div><div class="property">nombre <span>“Ana”</span></div><div class="property">edad <span>18</span></div></div></div></div><div><div class="info-card"><div class="mini-label">TIPOS DE DATOS</div><ul class="clean-list"><li><code>str</code> = texto.</li><li><code>int</code> = número entero.</li></ul><p class="card-sub">Podemos anotar el tipo con <code>:</code>, aunque Python no lo exige.</p></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">10 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 11: 3. Declaración de atributos, Ejemplo del profesor" class="slide" data-block="3" id="slide-11">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">3</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>3. Declaración de atributos</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Declaramos los atributos que esperamos en los objetos de la clase <code>Alumno</code>.</p><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Alumno</span><span class="p">:</span>
+    <span class="n">nombre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edad</span><span class="p">:</span> <span class="nb">int</span></code></pre></div><div class="info-card note-card"><strong>Importante:</strong> las anotaciones de tipo no asignan valores a cada objeto. Lo haremos en <code>__init__</code>.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">11 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 12: 3. Declaración de atributos, Pregunta al alumnado" class="slide" data-block="3" id="slide-12">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">3</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>3. Declaración de atributos</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">Si añadimos el DNI de un alumno, ¿usarías <code>str</code> o <code>int</code>? ¿Por qué?</p><p class="guided-prompt">Piensa si vamos a realizar operaciones matemáticas con ese dato.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p>Utilizamos <code>str</code>. El DNI funciona como un identificador, no como una cantidad; además puede contener letras.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">12 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 13: 3. Declaración de atributos, Actividad" class="slide" data-block="3" id="slide-13">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">3</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>3. Declaración de atributos</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Añade un atributo <code>dni</code> de tipo cadena.</p></div><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Alumno</span><span class="p">:</span>
+    <span class="n">nombre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edad</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">______________</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> Sigue el patrón <code>nombre: tipo</code>.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">13 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 14: 4. Definición del constructor, Explicación del profesor" class="slide" data-block="4" id="slide-14">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">4</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>4. Definición del constructor</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">El método especial <code>__init__()</code> permite <strong>inicializar</strong> los atributos cuando creamos un objeto.</p><div class="two-cols"><div><div class="info-card"><div class="mini-label">PIEZAS PRINCIPALES</div><ul class="clean-list"><li><code>def</code>: declara un método.</li><li><code>__init__</code>: inicialización.</li><li><code>self</code>: objeto actual.</li><li><code>nombre</code> y <code>edad</code>: parámetros.</li></ul></div></div><div><div class="info-card focus-card"><div class="transfer"><div><strong>nombre</strong><small>parámetro recibido</small></div><b>→</b><div><strong>self.nombre</strong><small>atributo del objeto</small></div></div><p class="card-sub"><code>self.nombre = nombre</code> guarda en el objeto el dato que recibimos.</p></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">14 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 15: 4. Definición del constructor, Ejemplo del profesor" class="slide" data-block="4" id="slide-15">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">4</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>4. Definición del constructor</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">El constructor recibe valores y los guarda en los atributos del nuevo alumno.</p><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Alumno</span><span class="p">:</span>
+    <span class="n">nombre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edad</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nombre</span><span class="p">,</span> <span class="n">edad</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nombre</span> <span class="o">=</span> <span class="n">nombre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edad</span> <span class="o">=</span> <span class="n">edad</span></code></pre></div><div class="info-card note-card"><strong>Fíjate:</strong> <code>self</code> aparece en la definición, pero no se pasa explícitamente cuando creamos el objeto.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">15 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 16: 4. Definición del constructor, Pregunta al alumnado" class="slide" data-block="4" id="slide-16">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">4</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>4. Definición del constructor</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">¿Es lo mismo <code>nombre</code> que <code>self.nombre</code>? ¿Qué pasaría con <code>nombre = nombre</code>?</p><p class="guided-prompt">Identifica qué parte es el parámetro y cuál pertenece al objeto.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p><code>nombre</code> es un parámetro local; <code>self.nombre</code> pertenece al objeto. Escribir <code>nombre = nombre</code> no crea ni actualiza el atributo del alumno.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">16 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 17: 4. Definición del constructor, Actividad" class="slide" data-block="4" id="slide-17">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">4</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>4. Definición del constructor</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Modifica el constructor para que también reciba y almacene el DNI.</p></div><div class="code-frame code-frame--compact"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Alumno</span><span class="p">:</span>
+    <span class="n">nombre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edad</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">dni</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nombre</span><span class="p">,</span> <span class="n">edad</span><span class="p">,</span> <span class="n">______</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nombre</span> <span class="o">=</span> <span class="n">nombre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edad</span> <span class="o">=</span> <span class="n">edad</span>
+        <span class="n">______________________</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> Añade un parámetro y una asignación con <code>self</code>.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">17 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 18: 5. Creación de objetos, Explicación del profesor" class="slide" data-block="5" id="slide-18">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">5</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>5. Creación de objetos</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">La <strong>clase</strong> es la plantilla; el <strong>objeto</strong> es un ejemplo concreto de esa plantilla.</p><div class="object-diagram"><div class="template-box">Clase Alumno <span>nombre · edad · dni</span></div><div class="branches"><span>↓</span><span>↓</span></div><div class="object-boxes"><div class="object-box"><b>alumno1</b><span>Ana · 18 años</span><span>12345678Z</span></div><div class="object-box"><b>alumno2</b><span>Carlos · 20 años</span><span>11111111H</span></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">18 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 19: 5. Creación de objetos, Ejemplo del profesor" class="slide" data-block="5" id="slide-19">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">5</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>5. Creación de objetos</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Creamos un alumno con datos ficticios y consultamos sus atributos mediante el punto.</p><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="n">alumno1</span> <span class="o">=</span> <span class="n">Alumno</span><span class="p">(</span><span class="s2">"Ana"</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="s2">"12345678Z"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">alumno1</span><span class="o">.</span><span class="n">nombre</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alumno1</span><span class="o">.</span><span class="n">edad</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">alumno1</span><span class="o">.</span><span class="n">dni</span><span class="p">)</span></code></pre></div><div class="output-card"><div class="output-label">Salida esperada</div><pre>Ana
+18
+12345678Z</pre></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">19 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 20: 5. Creación de objetos, Pregunta al alumnado" class="slide" data-block="5" id="slide-20">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">5</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>5. Creación de objetos</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">Si creamos dos alumnos, ¿comparten los valores de sus atributos o cada objeto conserva los suyos?</p><p class="guided-prompt">Imagina que cambiamos <code>alumno1.edad</code>. ¿Cambiaría automáticamente <code>alumno2.edad</code>?</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p>Cada objeto tiene sus propios atributos de instancia. Modificar la edad de <code>alumno1</code> no cambia la de <code>alumno2</code>.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">20 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 21: 5. Creación de objetos, Actividad" class="slide" data-block="5" id="slide-21">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">5</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>5. Creación de objetos</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Crea <code>alumno2</code> a partir de estos datos: Carlos, 20 años y DNI 11111111H. Después muestra sus tres atributos.</p></div><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="n">alumno2</span> <span class="o">=</span> <span class="n">__________</span><span class="p">(</span><span class="n">_____________________</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">________________</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">________________</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">________________</span><span class="p">)</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> Llama a la clase como si fuera una función. Los textos llevan comillas.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">21 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 22: 6. Declaración de métodos, Explicación del profesor" class="slide" data-block="6" id="slide-22">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">6</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>6. Declaración de métodos</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Los <strong>atributos</strong> son datos. Los <strong>métodos</strong> son acciones que pueden realizar los objetos.</p><div class="two-cols"><div><div class="small-card"><div class="small-card__title">Atributos (qué tiene)</div><div><ul class="clean-list compact-list"><li><code>nombre</code></li><li><code>edad</code></li><li><code>dni</code></li></ul></div></div></div><div><div class="small-card"><div class="small-card__title">Métodos (qué hace)</div><div><ul class="clean-list compact-list"><li><code>presentarse()</code></li><li><code>cumplir_anios()</code></li><li><code>mostrar_dni()</code></li></ul></div></div></div></div><div class="info-card note-card"><strong>Sintaxis:</strong> los métodos se declaran con <code>def</code> dentro de la clase y habitualmente reciben <code>self</code>.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">22 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 23: 6. Declaración de métodos, Ejemplo del profesor" class="slide" data-block="6" id="slide-23">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">6</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>6. Declaración de métodos</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Nuestra clase <code>Alumno</code> incorpora ahora dos métodos.</p><div class="code-frame code-frame--compact"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="k">class</span><span class="w"> </span><span class="nc">Alumno</span><span class="p">:</span>
+    <span class="n">nombre</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">edad</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">dni</span><span class="p">:</span> <span class="nb">str</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nombre</span><span class="p">,</span> <span class="n">edad</span><span class="p">,</span> <span class="n">dni</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nombre</span> <span class="o">=</span> <span class="n">nombre</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edad</span> <span class="o">=</span> <span class="n">edad</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dni</span> <span class="o">=</span> <span class="n">dni</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">presentarse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Me llamo </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">nombre</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Tengo </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">edad</span><span class="si">}</span><span class="s2"> años"</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">cumplir_anios</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edad</span> <span class="o">+=</span> <span class="mi">1</span></code></pre></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">23 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 24: 6. Declaración de métodos, Pregunta al alumnado" class="slide" data-block="6" id="slide-24">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">6</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>6. Declaración de métodos</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">¿Qué método <em>consulta</em> datos y cuál <em>modifica</em> el estado del objeto?</p><p class="guided-prompt">Busca una instrucción que cambie el valor de un atributo.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p><code>presentarse()</code> consulta y muestra datos; <code>cumplir_anios()</code> modifica <code>self.edad</code> sumándole uno.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">24 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 25: 6. Declaración de métodos, Actividad" class="slide" data-block="6" id="slide-25">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">6</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>6. Declaración de métodos</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Crea un método llamado <code>mostrar_dni()</code> que muestre el atributo <code>dni</code> del alumno.</p></div><div class="code-frame"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code>    <span class="k">def</span><span class="w"> </span><span class="nf">______________</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">_________________</span><span class="p">)</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> El método necesita <code>self</code> para acceder a los datos del propio objeto.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">25 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 26: 7. Utilización de los métodos, Explicación del profesor" class="slide" data-block="7" id="slide-26">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">7</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>7. Utilización de los métodos</h1>
+<div class="slide-phase">Explicación del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Para ejecutar un método, utilizamos <strong>objeto.método()</strong>. El punto permite acceder al comportamiento de ese objeto.</p><div class="method-example"><span class="method-object">alumno1</span><span class="method-dot">.</span><span class="method-name">presentarse</span><span class="method-parentheses">()</span></div><div class="legend-row"><span>objeto</span><span>punto</span><span>método</span><span>paréntesis</span></div><div class="info-card note-card"><strong>Recuerda:</strong> una llamada como <code>alumno1.cumplir_anios()</code> actúa sobre <code>alumno1</code>.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">26 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 27: 7. Utilización de los métodos, Ejemplo del profesor" class="slide" data-block="7" id="slide-27">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">7</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>7. Utilización de los métodos</h1>
+<div class="slide-phase">Ejemplo del profesor</div>
+</header>
+<div class="slide-content"><p class="lead">Vamos a predecir el resultado antes de ejecutar.</p><div class="two-cols"><div><div class="code-frame code-frame--compact"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="n">alumno1</span> <span class="o">=</span> <span class="n">Alumno</span><span class="p">(</span><span class="s2">"Ana"</span><span class="p">,</span> <span class="mi">18</span><span class="p">,</span> <span class="s2">"12345678Z"</span><span class="p">)</span>
+
+<span class="n">alumno1</span><span class="o">.</span><span class="n">presentarse</span><span class="p">()</span>
+<span class="n">alumno1</span><span class="o">.</span><span class="n">cumplir_anios</span><span class="p">()</span>
+<span class="n">alumno1</span><span class="o">.</span><span class="n">presentarse</span><span class="p">()</span></code></pre></div></div><div><div class="output-card"><div class="output-label">Salida esperada</div><pre>Me llamo Ana
+Tengo 18 años
+Me llamo Ana
+Tengo 19 años</pre></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">27 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 28: 7. Utilización de los métodos, Pregunta al alumnado" class="slide" data-block="7" id="slide-28">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">7</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>7. Utilización de los métodos</h1>
+<div class="slide-phase">Pregunta al alumnado</div>
+</header>
+<div class="slide-content"><div class="question-block"><span class="talk-tag">PIENSA · EXPLICA · CONTRASTA</span><p class="question-text">Si tenemos otro alumno de 20 años, ¿cambiará su edad cuando ejecutamos <code>alumno1.cumplir_anios()</code>?</p><p class="guided-prompt">Di sobre qué objeto se está ejecutando el método.</p></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Ver respuesta orientativa<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Para comentar después</div><p>No. El método se ejecuta sobre <code>alumno1</code>; el objeto <code>alumno2</code> mantiene su edad.</p></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">28 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 29: 7. Utilización de los métodos, Actividad" class="slide" data-block="7" id="slide-29">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">7</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>7. Utilización de los métodos</h1>
+<div class="slide-phase">Actividad</div>
+</header>
+<div class="slide-content"><div class="task-heading"><span class="task-num">TU TURNO</span><p>Completa las llamadas a los métodos de <code>alumno2</code>.</p></div><div class="code-frame code-frame--compact"><div class="code-frame__bar"><span class="code-dot"></span><span class="code-dot"></span><span class="code-dot"></span><span class="code-name">Python</span></div><pre><code><span class="n">alumno2</span> <span class="o">=</span> <span class="n">Alumno</span><span class="p">(</span><span class="s2">"Carlos"</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="s2">"11111111H"</span><span class="p">)</span>
+
+<span class="c1"># Mostrar la presentación</span>
+<span class="n">alumno2</span><span class="o">.</span><span class="n">____________</span><span class="p">()</span>
+
+<span class="c1"># Cumplir un año más</span>
+<span class="n">alumno2</span><span class="o">.</span><span class="n">____________</span><span class="p">()</span>
+
+<span class="c1"># Mostrar su DNI</span>
+<span class="n">alumno2</span><span class="o">.</span><span class="n">____________</span><span class="p">()</span></code></pre></div><div class="info-card hint-card"><strong>Pista:</strong> Los tres nombres ya aparecieron en el bloque anterior.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">29 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 30: 8. Reto final: clase Videojuego, Enunciado del reto" class="slide" data-block="8" id="slide-30">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">8</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>8. Reto final: clase Videojuego</h1>
+<div class="slide-phase">Enunciado del reto</div>
+</header>
+<div class="slide-content"><p class="lead">Ahora te toca trabajar <strong>sin código con huecos</strong>. Crea una clase nueva desde cero.</p><div class="two-cols"><div><div class="info-card"><div class="mini-label">CLASE Y ATRIBUTOS</div><p class="big-concept small">Videojuego</p><ul class="clean-list"><li><code>titulo: str</code></li><li><code>genero: str</code></li><li><code>horas_jugadas: int</code></li></ul></div></div><div><div class="info-card"><div class="mini-label">MÉTODOS OBLIGATORIOS</div><ul class="clean-list"><li><code>__init__(...)</code> inicializa los tres datos.</li><li><code>mostrar_informacion()</code> muestra los datos.</li><li><code>jugar(horas)</code> suma horas jugadas.</li></ul></div></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">30 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 31: 8. Reto final: clase Videojuego, Fase A · Primero en papel" class="slide" data-block="8" id="slide-31">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">8</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>8. Reto final: clase Videojuego</h1>
+<div class="slide-phase">Fase A · Primero en papel</div>
+</header>
+<div class="slide-content"><p class="lead">Antes de abrir el ordenador, dibuja la estructura y escribe todo el código a mano.</p><div class="info-card guide-card"><ol class="steps"><li>Declara la clase <code>Videojuego</code> y sus tres atributos.</li><li>Escribe el constructor completo y sus asignaciones con <code>self</code>.</li><li>Crea <code>mostrar_informacion()</code>.</li><li>Crea <code>jugar(horas)</code>, que actualice las horas.</li><li>Escribe cómo crear un objeto y llamar a sus métodos.</li></ol></div><div class="bottom-emphasis">Entrega individual: solución escrita en papel.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">31 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 32: 8. Reto final: clase Videojuego, Fase B · Después en Python" class="slide" data-block="8" id="slide-32">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">8</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>8. Reto final: clase Videojuego</h1>
+<div class="slide-phase">Fase B · Después en Python</div>
+</header>
+<div class="slide-content"><p class="lead">Pasa tu solución a <strong>VS Code</strong> y comprueba su funcionamiento.</p><div class="info-card guide-card"><ol class="steps"><li>Crea un archivo, por ejemplo <code>videojuego.py</code>.</li><li>Transcribe tu clase tal como la escribiste en papel.</li><li>Crea un videojuego con <strong>5 horas</strong> jugadas.</li><li>Muestra su información, ejecuta <code>jugar(3)</code> y vuelve a mostrarla.</li><li>Corrige los errores que aparezcan.</li></ol></div><div class="test-banner">Prueba que debe superar: <strong>5 horas + 3 horas = 8 horas</strong></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">32 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 33: 8. Reto final: clase Videojuego, Comprobación del reto" class="slide" data-block="8" id="slide-33">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">8</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>8. Reto final: clase Videojuego</h1>
+<div class="slide-phase">Comprobación del reto</div>
+</header>
+<div class="slide-content"><p class="lead">Comprueba tu propio programa antes de enseñárselo al profesor.</p><div class="checklist"><label><input type="checkbox"/> He declarado correctamente la clase y sus tres atributos.</label><label><input type="checkbox"/> El constructor recibe y guarda los tres valores.</label><label><input type="checkbox"/> <code>mostrar_informacion()</code> muestra los datos.</label><label><input type="checkbox"/> <code>jugar(horas)</code> actualiza el atributo correspondiente.</label><label><input type="checkbox"/> He creado un objeto y probado sus métodos.</label></div><div class="bottom-emphasis">Evidencias: ejercicio en papel + archivo Python ejecutable.</div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">33 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 34: 9. Cierre y ticket de salida, Ticket de salida" class="slide ticket-slide" data-block="9" id="slide-34">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">9</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>9. Cierre y ticket de salida</h1>
+<div class="slide-phase">Ticket de salida</div>
+</header>
+<div class="slide-content"><p class="lead">Responde individualmente, sin consultar el código.</p><div class="exit-questions"><div><b>1</b><span>¿Qué palabra reservada utilizamos para declarar una clase?</span></div><div><b>2</b><span>¿Qué representa <code>self</code> dentro de un método?</span></div><div><b>3</b><span>¿Para qué utilizamos <code>__init__()</code>?</span></div></div><div class="reveal-wrap"><button aria-expanded="false" class="reveal-btn" type="button">Mostrar respuestas<span aria-hidden="true">＋</span></button><div class="reveal-content" hidden=""><button aria-label="Ocultar solución" class="reveal-close" type="button">×</button><div class="reveal-content__title">Respuestas para corregir en común</div><ol class="answer-list"><li><code>class</code>.</li><li>Hace referencia al objeto actual.</li><li>Inicializa los atributos cuando creamos un objeto.</li></ol></div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">34 / 35</span></footer>
+</section><section aria-hidden="true" aria-label="Diapositiva 35: 9. Cierre y ticket de salida, Resumen final" class="slide finish" data-block="9" id="slide-35">
+<header class="slide-header">
+<div class="chapter-row"><span class="chapter-badge">9</span><span class="course-name">PROGRAMACIÓN ORIENTADA A OBJETOS · PYTHON</span></div>
+<h1>9. Cierre y ticket de salida</h1>
+<div class="slide-phase">Resumen final</div>
+</header>
+<div class="slide-content"><div class="closing"><div class="closing-label">HOY HAS APRENDIDO A…</div><div class="closing-flow"><span>Declarar una clase</span><b>→</b><span>Añadir atributos</span><b>→</b><span>Inicializar objetos</span><b>→</b><span>Crear objetos</span><b>→</b><span>Definir y llamar métodos</span></div><p><strong>Una misma clase va creciendo</strong> y cada objeto tiene sus propios datos y comportamientos.</p><div class="small-end">La herencia nos permitirá reutilizar clases más adelante.</div></div></div>
+<footer class="slide-footer"><div class="slide-footer__left">CLASE GUIADA · EXPLICACIÓN → EJEMPLO → PREGUNTA → ACTIVIDAD</div><span class="slide-footer__right">35 / 35</span></footer>
+</section>
+</main>
+<div aria-label="Controles de la presentación" id="controls"><div class="controls-inner">
+<button aria-label="Diapositiva anterior" class="control-btn" id="prev-slide" type="button">← Anterior</button>
+<span aria-live="polite" id="current-slide">1 / 35</span>
+<button aria-label="Diapositiva siguiente" class="control-btn" id="next-slide" type="button">Siguiente →</button>
+<button aria-label="Abrir índice" class="control-btn" id="index-btn" type="button">Índice</button>
+<button aria-label="Cambiar a pantalla completa" class="control-btn" id="fullscreen-btn" type="button">Pantalla completa ⛶</button>
+</div></div>
+<div aria-hidden="true" id="progress-wrap"><div id="progress"></div></div>
+<div aria-label="Índice de la presentación" aria-modal="true" id="overlay" role="dialog"><div class="overlay-dialog">
+<div class="overlay-header"><h2>Índice de la clase</h2><button aria-label="Cerrar el índice" id="close-overlay">×</button></div>
+<p class="overlay-sub">Selecciona un bloque. En cada concepto encontrarás: explicación, ejemplo, pregunta y actividad.</p>
+<button class="chapter-option" data-slide="1" type="button"><span>Inicio</span><span>Presentación</span><small>1 diap.</small></button><button class="chapter-option" data-slide="2" type="button"><span>1</span><span>Declaración de una clase</span><small>4 diap.</small></button><button class="chapter-option" data-slide="6" type="button"><span>2</span><span>Herencia: extender una clase</span><small>4 diap.</small></button><button class="chapter-option" data-slide="10" type="button"><span>3</span><span>Declaración de atributos</span><small>4 diap.</small></button><button class="chapter-option" data-slide="14" type="button"><span>4</span><span>Definición del constructor</span><small>4 diap.</small></button><button class="chapter-option" data-slide="18" type="button"><span>5</span><span>Creación de objetos</span><small>4 diap.</small></button><button class="chapter-option" data-slide="22" type="button"><span>6</span><span>Declaración de métodos</span><small>4 diap.</small></button><button class="chapter-option" data-slide="26" type="button"><span>7</span><span>Utilización de métodos</span><small>4 diap.</small></button><button class="chapter-option" data-slide="30" type="button"><span>8</span><span>Reto final: clase Videojuego</span><small>4 diap.</small></button><button class="chapter-option" data-slide="34" type="button"><span>9</span><span>Cierre y ticket de salida</span><small>2 diap.</small></button>
+<p class="foothelp">Teclas: ← → para avanzar y retroceder · F pantalla completa · I índice · Inicio / Fin</p>
+</div></div>
+<script>
+(()=>{
+const slides=Array.from(document.querySelectorAll('.slide'));
+const stage=document.getElementById('stage');
+const meter=document.getElementById('current-slide');
+const prev=document.getElementById('prev-slide');
+const next=document.getElementById('next-slide');
+const progress=document.getElementById('progress');
+const overlay=document.getElementById('overlay');
+let active=0;
+function adjustScale(){
+  const w=window.innerWidth,h=window.innerHeight;
+  const factor=Math.min(w/1280,h/720);
+  stage.style.setProperty('--scale',factor.toFixed(4));
+}
+function show(n){
+  const index=Math.max(0,Math.min(slides.length-1,n));
+  slides[active].classList.remove('active');
+  slides[active].setAttribute('aria-hidden','true');
+  active=index;
+  slides[active].classList.add('active');
+  slides[active].setAttribute('aria-hidden','false');
+  meter.textContent=`${active+1} / ${slides.length}`;
+  prev.disabled=active===0;
+  next.disabled=active===slides.length-1;
+  progress.style.width=`${((active+1)/slides.length)*100}%`;
+  history.replaceState(null,'',`#diapositiva-${active+1}`);
+}
+const hashMatch=location.hash.match(/diapositiva-(\d+)/);
+const first=hashMatch?Number(hashMatch[1])-1:0;
+slides[0].classList.add('active');
+show(first);
+function closeIndex(){overlay.classList.remove('open');}
+function openIndex(){overlay.classList.add('open');document.getElementById('close-overlay').focus();}
+prev.addEventListener('click',()=>show(active-1));
+next.addEventListener('click',()=>show(active+1));
+document.getElementById('index-btn').addEventListener('click',openIndex);
+document.getElementById('close-overlay').addEventListener('click',closeIndex);
+overlay.addEventListener('click',e=>{if(e.target===overlay)closeIndex();});
+document.querySelectorAll('.chapter-option').forEach(b=>b.addEventListener('click',()=>{show(Number(b.dataset.slide)-1);closeIndex();}));
+document.getElementById('fullscreen-btn').addEventListener('click',toggleFullscreen);
+function toggleFullscreen(){if(!document.fullscreenElement){document.documentElement.requestFullscreen?.();}else{document.exitFullscreen?.();}}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&overlay.classList.contains('open')){closeIndex();return;}
+  if(overlay.classList.contains('open')) return;
+  if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(active+1);}
+  if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();show(active-1);}
+  if(e.key==='Home'){e.preventDefault();show(0);}
+  if(e.key==='End'){e.preventDefault();show(slides.length-1);}
+  if(e.key.toLowerCase()==='f' && !e.ctrlKey && !e.altKey && !e.metaKey){toggleFullscreen();}
+  if(e.key.toLowerCase()==='i' && !e.ctrlKey && !e.altKey && !e.metaKey){openIndex();}
+});
+document.querySelectorAll('.reveal-btn').forEach(btn=>btn.addEventListener('click',()=>{
+  const box=btn.nextElementSibling;
+  const opened=!box.hasAttribute('hidden');
+  if(opened){box.setAttribute('hidden','');btn.setAttribute('aria-expanded','false');}
+  else {box.removeAttribute('hidden');btn.setAttribute('aria-expanded','true');}
+  btn.lastElementChild.textContent=opened?'＋':'−';
+}));
+document.querySelectorAll('.reveal-close').forEach(btn=>btn.addEventListener('click',()=>{const panel=btn.closest('.reveal-content'); const trigger=panel.previousElementSibling;panel.setAttribute('hidden','');trigger.setAttribute('aria-expanded','false');trigger.lastElementChild.textContent='＋';}));
+window.addEventListener('resize',adjustScale);
+window.addEventListener('hashchange',()=>{const h=location.hash.match(/diapositiva-(\d+)/);if(h)show(Number(h[1])-1);});
+adjustScale();
+})();
+</script>
+</body>
+</html>
