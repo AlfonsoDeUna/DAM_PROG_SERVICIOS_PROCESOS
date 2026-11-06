@@ -928,47 +928,37 @@
       "id": "s034",
       "block": "b05",
       "phase": "Explicación",
-      "title": "RLock conserva propietario y profundidad",
+      "title": "¿Por qué necesitamos RLock?",
       "content": [
         {
           "type": "table",
           "headers": [
-            "Acción del hilo A",
-            "Profundidad",
-            "¿Puede entrar B?"
+            "Con Lock()",
+            "Con RLock()"
           ],
           "rows": [
             [
-              "Antes de adquirir",
-              "0",
-              "Sí, si lo adquiere."
+              "cerrar_trabajo() adquiere el candado.",
+              "cerrar_trabajo() adquiere el candado."
             ],
             [
-              "Entra en cerrar_trabajo",
-              "1",
-              "No."
+              "Llama a sumar().",
+              "Llama a sumar()."
             ],
             [
-              "Entra también en sumar",
-              "2",
-              "No."
+              "sumar() intenta adquirir el mismo candado.",
+              "sumar() adquiere otra vez el mismo candado."
             ],
             [
-              "Sale de sumar",
-              "1",
-              "No."
-            ],
-            [
-              "Sale de cerrar_trabajo",
-              "0",
-              "Sí, cuando lo adquiera."
+              "El hilo queda bloqueado.",
+              "El programa continúa y devuelve 1."
             ]
           ]
         },
         {
           "type": "callout",
           "title": "Reentrada",
-          "text": "El propietario puede adquirir otra vez su propio RLock. Un hilo distinto continúa esperando."
+          "text": "RLock es un candado reentrante: permite que el mismo hilo lo adquiera varias veces, pero debe liberarlo el mismo número de veces. Mientras lo conserva, los demás hilos no pueden adquirirlo."
         }
       ]
     },
@@ -1030,25 +1020,203 @@
     {
       "id": "s037",
       "block": "b05",
-      "phase": "Actividad",
-      "title": "Conservar juntos los trabajos de un lote",
+      "phase": "Explicación",
+      "title": "Una miniimprenta recibe dos lotes de pedidos",
       "content": [
         {
           "type": "p",
-          "text": "En 04_rlock.py, anotar_lote adquiere el candado y llama repetidamente a anotar, que vuelve a adquirirlo."
+          "text": "Un lote es un grupo de pedidos que deben anotarse juntos. El hilo A anota el lote A1, A2; el hilo B anota el lote B1, B2."
         },
         {
-          "type": "bullets",
-          "items": [
-            "Ejecuta el programa y localiza ambas adquisiciones.",
-            "Comprueba que A1 y A2 permanecen juntas y B1 y B2 también. El orden de los lotes puede variar.",
-            "Explica por qué leer utiliza el candado y devuelve una copia de la lista.",
-            "Dibuja propietario y profundidad al entrar y salir de cada método."
+          "type": "callout",
+          "title": "Un único registro compartido",
+          "text": "Los dos hilos utilizan el mismo objeto registro y escriben en una sola lista: registro.trabajos. Queremos conservar juntas las dos anotaciones de cada lote."
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Lista final",
+            "¿Cumple lo que necesitamos?"
+          ],
+          "rows": [
+            [
+              "['A1', 'A2', 'B1', 'B2']",
+              "Sí. El lote A queda completo antes del lote B."
+            ],
+            [
+              "['B1', 'B2', 'A1', 'A2']",
+              "Sí. El lote B queda completo antes del lote A."
+            ],
+            [
+              "['A1', 'B1', 'A2', 'B2']",
+              "No. Las anotaciones de los lotes están mezcladas."
+            ]
           ]
         },
         {
           "type": "p",
-          "text": "lista.copy() crea una copia superficial: copia la lista, no necesariamente los objetos contenidos en ella."
+          "text": "El programa de las dos diapositivas siguientes está completo en ejemplos/04_rlock.py."
+        }
+      ]
+    },
+    {
+      "id": "s037a",
+      "block": "b05",
+      "phase": "Ejemplo completo",
+      "title": "Programa 1/2 · La clase Registro",
+      "content": [
+        {
+          "type": "p",
+          "text": "Primera parte de ejemplos/04_rlock.py. Añade debajo el main() de la siguiente diapositiva para obtener el programa completo."
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "text": "from threading import RLock, Thread\n\nclass Registro:\n    def __init__(self):\n        self.trabajos = []\n        self.candado = RLock()\n\n    def anotar(self, trabajo):\n        with self.candado:\n            self.trabajos.append(trabajo)\n\n    def anotar_lote(self, lote):\n        with self.candado:\n            for trabajo in lote:\n                self.anotar(trabajo)\n\n    def leer(self):\n        with self.candado:\n            return self.trabajos.copy()"
+        },
+        {
+          "type": "callout",
+          "title": "La lista y el candado pertenecen al mismo objeto",
+          "text": "__init__ crea self.trabajos y self.candado. anotar_lote protege el lote completo y llama a anotar, que adquiere de nuevo ese mismo RLock."
+        }
+      ]
+    },
+    {
+      "id": "s037b",
+      "block": "b05",
+      "phase": "Ejemplo completo",
+      "title": "Programa 2/2 · Dos hilos, un mismo registro",
+      "content": [
+        {
+          "type": "p",
+          "text": "Segunda parte de ejemplos/04_rlock.py, debajo de la clase anterior. Creamos un solo Registro; arrancamos los dos hilos y esperamos a ambos con join() antes de leer el resultado."
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "text": "def main():\n    registro = Registro()\n    hilos = [\n        Thread(target=registro.anotar_lote, args=([\"A1\", \"A2\"],)),\n        Thread(target=registro.anotar_lote, args=([\"B1\", \"B2\"],)),\n    ]\n    for hilo in hilos:\n        hilo.start()\n    for hilo in hilos:\n        hilo.join()\n\n    print(\"Registro:\", registro.leer())\n    print(\"El orden de los lotes puede variar; cada lote queda agrupado.\")\n    print(\"Cambiar RLock por Lock bloquearía la llamada anidada a anotar.\")\n\n\nif __name__ == \"__main__\":\n    main()"
+        },
+        {
+          "type": "callout",
+          "title": "Qué significan target y args",
+          "text": "target=registro.anotar_lote indica el método que ejecutará el hilo, sin llamarlo todavía. args=([\"A1\", \"A2\"],) es una tupla de un elemento: la lista completa. La coma final crea esa tupla; el método recibe la lista como su argumento lote."
+        }
+      ]
+    },
+    {
+      "id": "s037c",
+      "block": "b05",
+      "phase": "Explicación",
+      "title": "Traza del RLock mientras se anota el lote A",
+      "content": [
+        {
+          "type": "p",
+          "text": "Supongamos que A adquiere primero el candado. Propietario es el hilo que lo conserva. Profundidad es el número de adquisiciones de ese hilo que todavía faltan por liberar."
+        },
+        {
+          "type": "table",
+          "headers": [
+            "Paso del hilo A",
+            "Profundidad",
+            "¿Puede adquirirlo B?"
+          ],
+          "rows": [
+            [
+              "Entra en el with de anotar_lote.",
+              "1",
+              "No."
+            ],
+            [
+              "Entra en el with de anotar(\"A1\").",
+              "2",
+              "No."
+            ],
+            [
+              "Sale del with de anotar(\"A1\").",
+              "1",
+              "No."
+            ],
+            [
+              "Entra en el with de anotar(\"A2\").",
+              "2",
+              "No."
+            ],
+            [
+              "Sale del with de anotar(\"A2\").",
+              "1",
+              "No."
+            ],
+            [
+              "Sale del with de anotar_lote.",
+              "0",
+              "Sí, si lo adquiere."
+            ]
+          ]
+        },
+        {
+          "type": "callout",
+          "title": "Cada with libera su propia adquisición",
+          "text": "Al terminar anotar(\"A1\"), A sigue siendo propietario: conserva la adquisición exterior de anotar_lote. B podrá adquirir el candado cuando A salga del with exterior, con su lote ya completo."
+        }
+      ]
+    },
+    {
+      "id": "s037d",
+      "block": "b05",
+      "phase": "Explicación",
+      "title": "leer() protege la lectura y devuelve otra lista",
+      "content": [
+        {
+          "type": "p",
+          "text": "Este método de Registro adquiere el mismo candado antes de copiar. Así, los otros métodos no pueden cambiar la lista mientras se obtiene la copia."
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "text": "    def leer(self):\n        with self.candado:\n            return self.trabajos.copy()"
+        },
+        {
+          "type": "p",
+          "text": "En main(), después del bucle de join() y antes de los print(), añade estas líneas con la misma sangría:"
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "text": "    copia = registro.leer()\n    copia.append(\"X\")\n    print(\"Copia:\", copia)\n    print(\"Registro:\", registro.leer())"
+        },
+        {
+          "type": "callout",
+          "title": "La copia incluye X; el registro original no",
+          "text": "copy() crea una lista independiente: añadir X a copia no modifica registro.trabajos. Es una copia superficial: los elementos se comparten; aquí son cadenas, que son inmutables."
+        },
+        {
+          "type": "p",
+          "text": "La profundidad de la traza anterior es un concepto para entender RLock. No es un atributo público que debamos consultar en el programa."
+        }
+      ]
+    },
+    {
+      "id": "s037e",
+      "block": "b05",
+      "phase": "Actividad",
+      "title": "Comprueba qué protege el with exterior",
+      "content": [
+        {
+          "type": "bullets",
+          "items": [
+            "1. Ejecuta ejemplos/04_rlock.py sin modificarlo. Compara la lista que imprime con las dos salidas válidas de la miniimprenta: ¿cada lote conserva juntas sus dos anotaciones?",
+            "2. Analiza este cambio: en anotar_lote, quita únicamente su línea with self.candado: y reduce un nivel la sangría del for y de self.anotar. Mantén el with de anotar. ¿Qué queda protegido y qué deja de garantizarse?"
+          ]
+        },
+        {
+          "type": "code",
+          "language": "python",
+          "text": "    # Solo este método cambiaría dentro de Registro:\n    def anotar_lote(self, lote):\n        for trabajo in lote:\n            self.anotar(trabajo)"
+        },
+        {
+          "type": "callout",
+          "title": "Una anotación protegida no equivale a un lote protegido",
+          "text": "El candado interior sigue impidiendo que dos hilos modifiquen la lista a la vez durante cada append. Pero puede quedar libre entre A1 y A2: ya no se garantiza que el lote quede contiguo. Puede haber intercalación, aunque no aparezca en todas las ejecuciones."
         }
       ]
     },

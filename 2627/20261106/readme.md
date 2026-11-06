@@ -12,7 +12,7 @@ Presentación y evaluación formativa para **Programación de Servicios y Proces
 
 ## Qué incluye
 
-- **164 diapositivas** con fondo blanco, navegación por teclado, índice de contenidos y pantalla completa.
+- **169 diapositivas** con fondo blanco, navegación por teclado, índice de contenidos y pantalla completa.
 - **12 bloques** que recorren la creación de hilos, las referencias compartidas, `join`, las carreras, el GIL, `Lock`, `RLock`, `Condition`, `Semaphore`, `BoundedSemaphore`, `Event`, `Queue`, las descargas y una actividad integradora.
 - **36 actividades registradas: 24 preguntas de tipo test y 12 ejercicios de huecos**, distribuidas en tres actividades por bloque.
 - Una diapositiva de resultados inmediatamente después de cada actividad registrada.
